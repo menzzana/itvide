@@ -21,8 +21,8 @@ DataTable::DataTable() {
   name="";
   id=global::getUniqueIdentifier();
   size=0;
-  dataMatrix=NULL;
-  Next=NULL;
+  dataMatrix=nullptr;
+  Next=nullptr;
   }
 //------------------------------------------------------------------------------
 DataTable::~DataTable() {

@@ -25,8 +25,8 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   ui->tabWidget->setTabsClosable(true);
   setWindowTitle(QString(MYSOFTWARE)+" "+QString(MYVERSION)+"-"+QString(GIT_VERSION));
-  mainDataTable=NULL;
-  mainWidgetList=NULL;
+  mainDataTable=nullptr;
+  mainWidgetList=nullptr;
   setScatterShapes();
   }
 //------------------------------------------------------------------------------
@@ -161,12 +161,12 @@ void MainWindow::on_actionImport_triggered() {
   if (importWindow.exec()==QDialog::Accepted) {
     dataTable=importWindow.setImportedData();
     dataTable->name=global::SetDataName(mainDataTable,QFileInfo(fileName).baseName());
-    if (mainDataTable==NULL)
+    if (mainDataTable==nullptr)
       mainDataTable=dataTable;
     else
       global::GetLastClass(mainDataTable)->Next=dataTable;
-    for (WidgetList *widgetList=mainWidgetList; widgetList!=NULL; widgetList=widgetList->Next)
-      if (widgetList->object!=NULL)
+    for (WidgetList *widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
+      if (widgetList->object!=nullptr)
         widgetList->tablecmb->addItem(dataTable->name);
     CreateTablePlot(dataTable);
     addFilters(dataTable);
@@ -183,12 +183,12 @@ void MainWindow::closeEvent() {
   }
 //------------------------------------------------------------------------------
 void MainWindow::on_actionTable_triggered() {
-  if (mainDataTable!=NULL)
+  if (mainDataTable!=nullptr)
     CreateTablePlot(mainDataTable);
   }
 //------------------------------------------------------------------------------
 void MainWindow::on_actionScatterplot_triggered() {
-  if (mainDataTable!=NULL)
+  if (mainDataTable!=nullptr)
     CreateScatterPlot(mainDataTable);
   }
 //------------------------------------------------------------------------------
@@ -197,10 +197,10 @@ void MainWindow::on_actionReset_Filters_triggered() {
   DataMatrix *dm1;
   int y;
 
-  if (mainDataTable==NULL)
+  if (mainDataTable==nullptr)
     return;
-  for (dt1=mainDataTable; dt1!=NULL; dt1=dt1->Next)
-    for (dm1=dt1->dataMatrix; dm1!=NULL; dm1=dm1->Next)
+  for (dt1=mainDataTable; dt1!=nullptr; dt1=dt1->Next)
+    for (dm1=dt1->dataMatrix; dm1!=nullptr; dm1=dm1->Next)
       for (y=0; y<dt1->size; y++)
         dm1->Visible[y]=true;
   //UpdateTablePlot(dt1,ui->tabWidget->currentWidget()->findChild<QTableWidget *>());
@@ -224,7 +224,7 @@ void MainWindow::filterSliderChanged(int minvalue, int maxvalue) {
   labels.at(RANGESLIDERMAX)->setText(QString::number(max));
   for (int y=0; y<dataTable->size; y++)
     dataMatrix->Visible[y]=(dataMatrix->value[y].toDouble()>=min && dataMatrix->value[y].toDouble()<=max);
-  for (widgetList=mainWidgetList; widgetList!=NULL; widgetList=widgetList->Next)
+  for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
     if (widgetList->datatable==dataTable)
       updatePlot(widgetList);
   }
@@ -248,7 +248,7 @@ void MainWindow::filterListWidgetChanged() {
       if (dataMatrix->Visible[y])
         break;
       }
-  for (widgetList=mainWidgetList; widgetList!=NULL; widgetList=widgetList->Next)
+  for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
     if (widgetList->datatable==dataTable)
       updatePlot(widgetList);
   }
@@ -262,7 +262,7 @@ void MainWindow::dataTableChanged(int value) {
   dataTable=mainDataTable;
   for (int i1=0; i1<value; i1++)
     dataTable=dataTable->Next;
-  for (widgetList=mainWidgetList; widgetList!=NULL; widgetList=widgetList->Next)
+  for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
     if (widgetList->tablecmb==comboBox) {
       widgetList->datatable=dataTable;
       populateColumnBox(dataTable,widgetList->yaxiscmb,0);
@@ -277,7 +277,7 @@ void MainWindow::axisChanged() {
   WidgetList *widgetList;
 
   comboBox=(QComboBox *)sender();
-  for (widgetList=mainWidgetList; widgetList!=NULL; widgetList=widgetList->Next)
+  for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
     if (widgetList->xaxiscmb==comboBox || widgetList->yaxiscmb==comboBox)
       updatePlot(widgetList);
       return;
@@ -288,18 +288,18 @@ void MainWindow::closeTab(int index) {
   int idx;
 
   ui->tabWidget->widget(index)->deleteLater();
-  for (widgetList=mainWidgetList,idx=0; widgetList!=NULL && idx<index; widgetList=widgetList->Next)
-    if (widgetList->object!=NULL)
+  for (widgetList=mainWidgetList,idx=0; widgetList!=nullptr && idx<index; widgetList=widgetList->Next)
+    if (widgetList->object!=nullptr)
       idx++;
-  widgetList->object=NULL;
+  widgetList->object=nullptr;
   }
 //------------------------------------------------------------------------------
 void MainWindow::switchedTab(int index) {
   WidgetList *widgetList;
   int idx;
 
-  for (widgetList=mainWidgetList,idx=0; widgetList!=NULL && idx<index; widgetList=widgetList->Next)
-    if (widgetList->object!=NULL)
+  for (widgetList=mainWidgetList,idx=0; widgetList!=nullptr && idx<index; widgetList=widgetList->Next)
+    if (widgetList->object!=nullptr)
       idx++;
   activeWidgetList=widgetList;
   }
@@ -309,7 +309,7 @@ void MainWindow::axisLabelClick(QCPAxis*,QCPAxis::SelectablePart) {
   }
 //------------------------------------------------------------------------------
 void MainWindow::updatePlot(WidgetList *widgetList) {
-  if (widgetList->object==NULL)
+  if (widgetList->object==nullptr)
     return;
   switch(widgetList->plottype) {
     case WidgetList::TABLEPLOT:
@@ -344,7 +344,7 @@ QComboBox *MainWindow::AddDataTableComboBox(DataTable *myDataTable) {
   int i1,myIndex;
 
   comboBox=new QComboBox();
-  for (dataTable=mainDataTable, i1=0; dataTable!=NULL; dataTable=dataTable->Next, i1++) {
+  for (dataTable=mainDataTable, i1=0; dataTable!=nullptr; dataTable=dataTable->Next, i1++) {
     comboBox->addItem(dataTable->name);
     if (myDataTable==dataTable)
       myIndex=i1;
@@ -367,11 +367,11 @@ QComboBox *MainWindow::AddParameterComboBox(DataTable *dataTable,int index) {
 void MainWindow::populateColumnBox(DataTable *myDataTable,QComboBox *comboBox,int index) {
   DataMatrix *dataMatrix;
 
-  if (comboBox==NULL)
+  if (comboBox==nullptr)
     return;
   comboBox->blockSignals(true);
   comboBox->clear();
-  for (dataMatrix=myDataTable->dataMatrix; dataMatrix!=NULL; dataMatrix=dataMatrix->Next)
+  for (dataMatrix=myDataTable->dataMatrix; dataMatrix!=nullptr; dataMatrix=dataMatrix->Next)
     comboBox->addItem(dataMatrix->name);
   comboBox->setCurrentIndex(max(0,index));
   comboBox->blockSignals(false);
@@ -393,7 +393,7 @@ void MainWindow::addFilters(DataTable *dataTable) {
   frame->setLayout(frameLayout);
   frame->setProperty(PROPERTIES::TABLEID,dataTable->id);
   ui->toolBox->addItem(frame,dataTable->name);
-  for (dataMatrix=dataTable->dataMatrix; dataMatrix!=NULL; dataMatrix=dataMatrix->Next) {
+  for (dataMatrix=dataTable->dataMatrix; dataMatrix!=nullptr; dataMatrix=dataMatrix->Next) {
     frame=new QFrame();
     frame->setFrameShape(QFrame::Box);
     myLayout=new QGridLayout();
@@ -447,7 +447,7 @@ void MainWindow::CreateTablePlot(DataTable *dataTable) {
   widgetList=new WidgetList();
   widgetList->datatable=dataTable;
   widgetList->plottype=WidgetList::TABLEPLOT;
-  if (mainWidgetList==NULL)
+  if (mainWidgetList==nullptr)
     mainWidgetList=widgetList;
   else
     global::GetLastClass(mainWidgetList)->Next=widgetList;
@@ -469,7 +469,7 @@ void MainWindow::UpdateTablePlot(WidgetList *widgetList) {
 
   dataTable=widgetList->datatable;
   tableWidget=(QTableWidget *)widgetList->object;
-  for (dataMatrix=dataTable->dataMatrix; dataMatrix!=NULL; dataMatrix=dataMatrix->Next)
+  for (dataMatrix=dataTable->dataMatrix; dataMatrix!=nullptr; dataMatrix=dataMatrix->Next)
     tableHeader.append(dataMatrix->name);
   tableRows=dataTable->size;
   tableWidget->setRowCount(tableRows);
@@ -478,12 +478,12 @@ void MainWindow::UpdateTablePlot(WidgetList *widgetList) {
   tableWidget->verticalHeader()->setVisible(false);
   tableWidget->setHorizontalHeaderLabels(tableHeader);
   for (y=y1=0; y<dataTable->size; y++) {
-    for (x=0,dataMatrix=dataTable->dataMatrix; dataMatrix!=NULL; x++,dataMatrix=dataMatrix->Next) {
+    for (x=0,dataMatrix=dataTable->dataMatrix; dataMatrix!=nullptr; x++,dataMatrix=dataMatrix->Next) {
       tableWidget->setItem(y1,x,new QTableWidgetItem(dataMatrix->value[y]));
       if (!dataMatrix->Visible[y])
         break;
       }
-    if (dataMatrix==NULL)
+    if (dataMatrix==nullptr)
       y1++;
     }
   tableWidget->setRowCount(y1);
@@ -494,14 +494,14 @@ void MainWindow::CreateScatterPlot(DataTable *dataTable) {
   QCustomPlot *chart;
   WidgetList *widgetList;
 
-  if (dataTable->dataMatrix->Next==NULL) {
+  if (dataTable->dataMatrix->Next==nullptr) {
     QMessageBox::about(this,"Cannot draw plot","Too little data");
     return;
     }
   widgetList=new WidgetList();
   widgetList->datatable=dataTable;
   widgetList->plottype=WidgetList::SCATTERPLOT;
-  if (mainWidgetList==NULL)
+  if (mainWidgetList==nullptr)
     mainWidgetList=widgetList;
   else
     global::GetLastClass(mainWidgetList)->Next=widgetList;
@@ -539,11 +539,11 @@ void MainWindow::UpdateScatterPlot(WidgetList *widgetList) {
   chart->clearGraphs();
   chart->clearItems();
   chart->legend->clear();
-  if (plotdata.dmcolor!=NULL)
+  if (plotdata.dmcolor!=nullptr)
     addLegendTitle(chart,"Colour: "+plotdata.dmcolor->name);
-  if (plotdata.dmshape!=NULL)
+  if (plotdata.dmshape!=nullptr)
     addLegendTitle(chart,"Shape: "+plotdata.dmshape->name);
-  if (plotdata.dmsize!=NULL)
+  if (plotdata.dmsize!=nullptr)
     addLegendTitle(chart,"Size: "+plotdata.dmsize->name);
   /*
   chart->legend->setBorderPen(Qt::NoPen);
@@ -596,7 +596,7 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
   PlotDataContainer plotdata;
   int idx,nbins,uniqueIndex,totalIndex;
 
-  for (idx=0,dataMatrix=widgetList->datatable->dataMatrix; dataMatrix!=NULL; idx++,dataMatrix=dataMatrix->Next) {
+  for (idx=0,dataMatrix=widgetList->datatable->dataMatrix; dataMatrix!=nullptr; idx++,dataMatrix=dataMatrix->Next) {
     if (idx==widgetList->yaxiscmb->currentIndex())
       plotdata.dmy=dataMatrix;
     if (idx==widgetList->xaxiscmb->currentIndex())
@@ -608,9 +608,9 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
     if (idx==widgetList->sizeindex)
       plotdata.dmsize=dataMatrix;
     }
-  nbins=(plotdata.dmcolor!=NULL?plotdata.dmcolor->intervals:1)*
-        (plotdata.dmshape!=NULL?plotdata.dmshape->intervals:1)*
-        (plotdata.dmsize!=NULL?plotdata.dmsize->intervals:1);
+  nbins=(plotdata.dmcolor!=nullptr?plotdata.dmcolor->intervals:1)*
+        (plotdata.dmshape!=nullptr?plotdata.dmshape->intervals:1)*
+        (plotdata.dmsize!=nullptr?plotdata.dmsize->intervals:1);
   plotdata.ydata.resize(nbins);
   plotdata.xdata.resize(nbins);
   plotdata.plotTypes.resize(nbins);
@@ -623,22 +623,22 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
     indx[i1]=0;
     }
   for (int y=0; y<widgetList->datatable->size; y++) {
-    for (dataMatrix=widgetList->datatable->dataMatrix; dataMatrix!=NULL; dataMatrix=dataMatrix->Next)
+    for (dataMatrix=widgetList->datatable->dataMatrix; dataMatrix!=nullptr; dataMatrix=dataMatrix->Next)
       if (!dataMatrix->Visible[y])
         break;
-    if (dataMatrix!=NULL)
+    if (dataMatrix!=nullptr)
       continue;
     uniqueIndex=0;
     totalIndex=1;
-    if (plotdata.dmcolor!=NULL) {
+    if (plotdata.dmcolor!=nullptr) {
       uniqueIndex=plotdata.dmcolor->uniqueIndex[y];
       totalIndex*=plotdata.dmcolor->intervals;
       }
-    if (plotdata.dmshape!=NULL) {
+    if (plotdata.dmshape!=nullptr) {
       uniqueIndex=totalIndex*plotdata.dmshape->uniqueIndex[y]+uniqueIndex;
       totalIndex*=plotdata.dmshape->intervals;
       }
-    if (plotdata.dmsize!=NULL)
+    if (plotdata.dmsize!=nullptr)
       uniqueIndex=totalIndex*plotdata.dmsize->uniqueIndex[y]+uniqueIndex;
     plotdata.ydata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmy->value[y].toDouble();
     plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->value[y].toDouble();
@@ -647,15 +647,15 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
       continue;
     int plotTypes[GRAPHTYPES_LENGTH]={0,0,1};
     plotdata.valueText[uniqueIndex]="";
-    if (plotdata.dmcolor!=NULL) {
+    if (plotdata.dmcolor!=nullptr) {
       plotTypes[COLOR]=plotdata.dmcolor->uniqueIndex[y];
       plotdata.valueText[uniqueIndex]=plotdata.dmcolor->value[y]+" ";
       }
-    if (plotdata.dmshape!=NULL) {
+    if (plotdata.dmshape!=nullptr) {
       plotTypes[SHAPE]=plotdata.dmshape->uniqueIndex[y];
       plotdata.valueText[uniqueIndex]+=plotdata.dmshape->value[y]+" ";
       }
-    if (plotdata.dmsize!=NULL) {
+    if (plotdata.dmsize!=nullptr) {
       plotTypes[SIZE]=plotdata.dmsize->uniqueIndex[y];
       plotdata.valueText[uniqueIndex]+=plotdata.dmsize->value[y];
       }

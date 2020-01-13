@@ -120,7 +120,7 @@ DataTable *ImportWindow::setImportedData() {
 
   dataTable=new DataTable();
   dataTable->size=ui->tableWidget->rowCount()-1;
-  lastDataMatrix=NULL;
+  lastDataMatrix=nullptr;
   for (i1=0; i1<ui->tableWidget->columnCount(); i1++) {
     dataMatrix=new DataMatrix();
     dataMatrix->intervals=global::DEFAULT_INTERVAL;
@@ -132,7 +132,7 @@ DataTable *ImportWindow::setImportedData() {
     dataMatrix->uniqueValue=new QList<QString>();
     for (i2=1; i2<ui->tableWidget->rowCount(); i2++) {
       item=ui->tableWidget->item(i2,i1);
-      dataMatrix->value[i2-1]=(item==NULL?NULL:(QString)item->text().trimmed());
+      dataMatrix->value[i2-1]=(item==nullptr?nullptr:(QString)item->text().trimmed());
       dataMatrix->setUniqueStringList(i2-1);
       dataMatrix->Visible[i2-1]=true;
       }
@@ -140,7 +140,7 @@ DataTable *ImportWindow::setImportedData() {
     dataMatrix->SortUniqueValues();
     dataMatrix->setMinMaxValues();
     dataMatrix->setUniqueIndex(dataTable->size);
-    if (lastDataMatrix==NULL)
+    if (lastDataMatrix==nullptr)
       lastDataMatrix=dataTable->dataMatrix=dataMatrix;
     else {
       lastDataMatrix->Next=dataMatrix;

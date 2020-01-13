@@ -1,8 +1,8 @@
 #include "widgetlist.h"
 //------------------------------------------------------------------------------
 WidgetList::WidgetList() {
-  datatable=NULL;
-  tablecmb=yaxiscmb=xaxiscmb=NULL;
+  datatable=nullptr;
+  tablecmb=yaxiscmb=xaxiscmb=nullptr;
   colorindex=-1;
   shapeindex=-1;
   sizeindex=-1;
@@ -10,8 +10,8 @@ WidgetList::WidgetList() {
   colortype=SINGLE;
   sizetype=global::DEFAULT_SCATTER_SIZE;
   plottype=-1;
-  object=NULL;
-  Next=NULL;
+  object=nullptr;
+  Next=nullptr;
   }
 //------------------------------------------------------------------------------
 WidgetList::~WidgetList() {

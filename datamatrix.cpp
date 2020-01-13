@@ -20,14 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 DataMatrix::DataMatrix() {
   name="";
   id=global::getUniqueIdentifier();
-  value=NULL;
-  Visible=NULL;
-  uniqueValue=NULL;
-  uniqueIndex=NULL;
+  value=nullptr;
+  Visible=nullptr;
+  uniqueValue=nullptr;
+  uniqueIndex=nullptr;
   valueType=global::INT_TYPE;
   intervals=0;
   minValue=maxValue=0;
-  Next=NULL;
+  Next=nullptr;
   }
 //------------------------------------------------------------------------------
 DataMatrix::~DataMatrix() {
