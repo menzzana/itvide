@@ -16,9 +16,6 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QTabWidget" name="tabWidget"/>
-    </item>
-    <item>
      <widget class="QToolBox" name="toolBox">
       <property name="minimumSize">
        <size>
@@ -32,10 +29,19 @@
         <height>16777215</height>
        </size>
       </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
       <property name="currentIndex">
        <number>-1</number>
       </property>
      </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget"/>
     </item>
    </layout>
   </widget>
@@ -45,26 +51,26 @@
      <x>0</x>
      <y>0</y>
      <width>881</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="actionImport"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuDraw">
     <property name="title">
-     <string>Draw</string>
+     <string>&amp;Draw</string>
     </property>
     <addaction name="actionTable"/>
     <addaction name="actionScatterplot"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Tools</string>
+     <string>&amp;Tools</string>
     </property>
     <addaction name="actionReset_Filters"/>
    </widget>
@@ -83,27 +89,27 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionImport">
    <property name="text">
-    <string>Import</string>
+    <string>&amp;Import</string>
    </property>
   </action>
   <action name="actionQuit">
    <property name="text">
-    <string>Quit</string>
+    <string>&amp;Quit</string>
    </property>
   </action>
   <action name="actionTable">
    <property name="text">
-    <string>Table</string>
+    <string>&amp;Table</string>
    </property>
   </action>
   <action name="actionScatterplot">
    <property name="text">
-    <string>Scatterplot</string>
+    <string>&amp;Scatterplot</string>
    </property>
   </action>
   <action name="actionReset_Filters">
    <property name="text">
-    <string>Reset Filters</string>
+    <string>&amp;Reset Filters</string>
    </property>
   </action>
  </widget>

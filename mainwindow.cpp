@@ -38,18 +38,22 @@ MainWindow::~MainWindow() {
 //------------------------------------------------------------------------------
 // Triggered Actions
 //------------------------------------------------------------------------------
-void MainWindow::ShowContextMenu(const QPoint &pos) {
-  QMenu menu;
+void MainWindow::ShowContextMenu() {
+  QMenu *menu;
+  QAction *action;
 
-  QCustomPlot *chart=(QCustomPlot *)sender();
-  menu.addAction("Set color");
-  connect(menu.actions().at(0),SIGNAL(triggered()),this,SLOT(setChartColor()));
-  menu.addAction("Set shape");
-  connect(menu.actions().at(1),SIGNAL(triggered()),this,SLOT(setChartShapes()));
-  menu.addAction("Set size");
-  connect(menu.actions().at(2),SIGNAL(triggered()),this,SLOT(setChartSizes()));
-  menu.exec(chart->mapToGlobal(pos));
-  menu.close();
+  menu=new QMenu();
+  action=new QAction("Set Color",this);
+  menu->addAction(action);
+  connect(action,&QAction::triggered,this,&MainWindow::setChartColor);
+  action=new QAction("Set shape",this);
+  menu->addAction(action);
+  connect(action,&QAction::triggered,this,&MainWindow::setChartShapes);
+  action=new QAction("Set size",this);
+  menu->addAction(action);
+  connect(action,&QAction::triggered,this,&MainWindow::setChartSizes);
+  menu->exec(this->mapToGlobal(this->mapFromGlobal(QCursor::pos())));
+  menu->close();
   }
 //------------------------------------------------------------------------------
 void MainWindow::setChartColor() {
@@ -206,20 +210,14 @@ void MainWindow::on_actionReset_Filters_triggered() {
   //UpdateTablePlot(dt1,ui->tabWidget->currentWidget()->findChild<QTableWidget *>());
   }
 //------------------------------------------------------------------------------
-void MainWindow::filterSliderChanged(int minvalue, int maxvalue) {
-  ctkRangeSlider *slider;
-  DataTable *dataTable;
-  DataMatrix *dataMatrix;
+void MainWindow::filterSliderChanged(ctkRangeSlider *slider,DataTable *dataTable,DataMatrix *dataMatrix) {
   WidgetList *widgetList;
   QList<QLabel *> labels;
   double min,max;
 
-  slider=(ctkRangeSlider *)sender();
   labels=slider->parentWidget()->findChildren<QLabel *>();
-  dataTable=global::GetClass(mainDataTable,slider->property(PROPERTIES::TABLEID).toInt());
-  dataMatrix=global::GetClass(dataTable->dataMatrix,slider->property(PROPERTIES::MATRIXID).toInt());
-  min=dataMatrix->getActualValue(minvalue);
-  max=dataMatrix->getActualValue(maxvalue);
+  min=dataMatrix->getActualValue(slider->minimumValue());
+  max=dataMatrix->getActualValue(slider->maximumValue());
   labels.at(RANGESLIDERMIN)->setText(QString::number(min));
   labels.at(RANGESLIDERMAX)->setText(QString::number(max));
   for (int y=0; y<dataTable->size; y++)
@@ -229,16 +227,10 @@ void MainWindow::filterSliderChanged(int minvalue, int maxvalue) {
       updatePlot(widgetList);
   }
 //------------------------------------------------------------------------------
-void MainWindow::filterListWidgetChanged() {
-  QListWidget *listWidget;
+void MainWindow::filterListWidgetChanged(QListWidget *listWidget,DataTable *dataTable,DataMatrix *dataMatrix) {
   WidgetList *widgetList;
-  DataTable *dataTable;
-  DataMatrix *dataMatrix;
   QList<QListWidgetItem *> selected;
 
-  listWidget=(QListWidget *)sender();
-  dataTable=global::GetClass(mainDataTable,listWidget->property(PROPERTIES::TABLEID).toInt());
-  dataMatrix=global::GetClass(dataTable->dataMatrix,listWidget->property(PROPERTIES::MATRIXID).toInt());
   selected=listWidget->selectedItems();
   for (int y=0; y<dataTable->size; y++)
     for (int idx=0; idx<selected.size(); idx++) {
@@ -253,14 +245,12 @@ void MainWindow::filterListWidgetChanged() {
       updatePlot(widgetList);
   }
 //------------------------------------------------------------------------------
-void MainWindow::dataTableChanged(int value) {
-  QComboBox *comboBox;
+void MainWindow::dataTableChanged(QComboBox *comboBox) {
   WidgetList *widgetList;
   DataTable *dataTable;
 
-  comboBox=(QComboBox *)sender();
   dataTable=mainDataTable;
-  for (int i1=0; i1<value; i1++)
+  for (int i1=0; i1<comboBox->currentIndex(); i1++)
     dataTable=dataTable->Next;
   for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
     if (widgetList->tablecmb==comboBox) {
@@ -272,11 +262,9 @@ void MainWindow::dataTableChanged(int value) {
       }
   }
 //------------------------------------------------------------------------------
-void MainWindow::axisChanged() {
-  QComboBox *comboBox;
+void MainWindow::axisChanged(QComboBox *comboBox) {
   WidgetList *widgetList;
 
-  comboBox=(QComboBox *)sender();
   for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
     if (widgetList->xaxiscmb==comboBox || widgetList->yaxiscmb==comboBox)
       updatePlot(widgetList);
@@ -331,8 +319,14 @@ QGridLayout *MainWindow::AddTab(WidgetList *widgetList) {
   ui->tabWidget->addTab(myTab,STATUS::TABLE_NAME+QString::number(ui->tabWidget->count()+1));
   myLayout=new QGridLayout();
   myTab->setLayout(myLayout);
-  connect(ui->tabWidget,SIGNAL(tabCloseRequested(int)),this,SLOT(closeTab(int)));
-  connect(ui->tabWidget,SIGNAL(tabBarClicked(int)),this,SLOT(switchedTab(int)));
+  connect(ui->tabWidget,static_cast<void(QTabWidget::*)(int)>(&QTabWidget::tabCloseRequested),this,[this](int index) {
+      closeTab(index);
+      }
+    );
+  connect(ui->tabWidget,static_cast<void(QTabWidget::*)(int)>(&QTabWidget::tabBarClicked),this,[this](int index) {
+      switchedTab(index);
+      }
+    );
   ui->tabWidget->setCurrentWidget(myTab);
   activeWidgetList=widgetList;
   return myLayout;
@@ -350,7 +344,10 @@ QComboBox *MainWindow::AddDataTableComboBox(DataTable *myDataTable) {
       myIndex=i1;
     }
   comboBox->setCurrentIndex(myIndex);
-  connect(comboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(dataTableChanged(int)));
+  connect(comboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),[=] {
+      dataTableChanged(comboBox);
+      }
+    );
   return comboBox;
   }
 //------------------------------------------------------------------------------
@@ -360,7 +357,10 @@ QComboBox *MainWindow::AddParameterComboBox(DataTable *dataTable,int index) {
   comboBox=new QComboBox();
   comboBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
   populateColumnBox(dataTable,comboBox,index);
-  connect(comboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(axisChanged()));
+  connect(comboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),[=] {
+      axisChanged(comboBox);
+      }
+    );
   return comboBox;
   }
 //------------------------------------------------------------------------------
@@ -410,9 +410,10 @@ void MainWindow::addFilters(DataTable *dataTable) {
         listWidget->addItem(dataMatrix->uniqueValue->at(i1));
       listWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
       listWidget->item(0)->setSelected(true);
-      listWidget->setProperty(PROPERTIES::TABLEID,dataTable->id);
-      listWidget->setProperty(PROPERTIES::MATRIXID,dataMatrix->id);
-      connect(listWidget,SIGNAL(itemSelectionChanged()),this,SLOT(filterListWidgetChanged()));
+      connect(listWidget,&QListWidget::itemSelectionChanged,[=] {
+          filterListWidgetChanged(listWidget,dataTable,dataMatrix);
+          }
+        );
       label->setMaximumWidth(listWidget->width());
       myLayout->addWidget(listWidget,1,0,1,1);
       }
@@ -429,10 +430,11 @@ void MainWindow::addFilters(DataTable *dataTable) {
       slider->setMaximum(dataMatrix->intervals-1);
       slider->setMinimumPosition(0);
       slider->setMaximumPosition(dataMatrix->intervals-1);
-      slider->setProperty(PROPERTIES::TABLEID,dataTable->id);
-      slider->setProperty(PROPERTIES::MATRIXID,dataMatrix->id);
       slider->setProperty("Orientation",true);
-      connect(slider,SIGNAL(valuesChanged(int,int)),this,SLOT(filterSliderChanged(int,int)));
+      connect(slider,&ctkRangeSlider::valuesChanged,[=] {
+          filterSliderChanged(slider,dataTable,dataMatrix);
+          }
+        );
       label->setMaximumWidth(slider->width());
       myLayout->addWidget(slider,2,0,1,2);
       }
@@ -535,7 +537,10 @@ void MainWindow::UpdateScatterPlot(WidgetList *widgetList) {
   chart->legend->setVisible(true);
   //connect(chart,SIGNAL(axisClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)),this,SLOT(axisLabelClick(QCPAxis*,QCPAxis::SelectablePart)));
   chart->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(chart, SIGNAL(customContextMenuRequested(const QPoint &)),SLOT(ShowContextMenu(const QPoint &)));
+  connect(chart,static_cast<void(QCustomPlot::*)(const QPoint &)>(&QCustomPlot::customContextMenuRequested),[=] {
+      ShowContextMenu();
+      }
+    );
   chart->clearGraphs();
   chart->clearItems();
   chart->legend->clear();
