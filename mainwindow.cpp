@@ -43,7 +43,7 @@ void MainWindow::ShowContextMenu() {
   QAction *action;
 
   menu=new QMenu();
-  action=new QAction("Set Color",this);
+  action=new QAction("Set Colour",this);
   menu->addAction(action);
   connect(action,&QAction::triggered,this,&MainWindow::setChartColor);
   action=new QAction("Set shape",this);
@@ -266,9 +266,10 @@ void MainWindow::axisChanged(QComboBox *comboBox) {
   WidgetList *widgetList;
 
   for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
-    if (widgetList->xaxiscmb==comboBox || widgetList->yaxiscmb==comboBox)
+    if (widgetList->xaxiscmb==comboBox || widgetList->yaxiscmb==comboBox) {
       updatePlot(widgetList);
       return;
+      }
   }
 //------------------------------------------------------------------------------
 void MainWindow::closeTab(int index) {
@@ -319,11 +320,11 @@ QGridLayout *MainWindow::AddTab(WidgetList *widgetList) {
   ui->tabWidget->addTab(myTab,STATUS::TABLE_NAME+QString::number(ui->tabWidget->count()+1));
   myLayout=new QGridLayout();
   myTab->setLayout(myLayout);
-  connect(ui->tabWidget,static_cast<void(QTabWidget::*)(int)>(&QTabWidget::tabCloseRequested),this,[this](int index) {
+  connect(ui->tabWidget,static_cast<void(QTabWidget::*)(int)>(&QTabWidget::tabCloseRequested),[this](int index) {
       closeTab(index);
       }
     );
-  connect(ui->tabWidget,static_cast<void(QTabWidget::*)(int)>(&QTabWidget::tabBarClicked),this,[this](int index) {
+  connect(ui->tabWidget,static_cast<void(QTabWidget::*)(int)>(&QTabWidget::tabBarClicked),[this](int index) {
       switchedTab(index);
       }
     );
@@ -338,6 +339,7 @@ QComboBox *MainWindow::AddDataTableComboBox(DataTable *myDataTable) {
   int i1,myIndex;
 
   comboBox=new QComboBox();
+  myIndex=0;
   for (dataTable=mainDataTable, i1=0; dataTable!=nullptr; dataTable=dataTable->Next, i1++) {
     comboBox->addItem(dataTable->name);
     if (myDataTable==dataTable)
@@ -399,8 +401,7 @@ void MainWindow::addFilters(DataTable *dataTable) {
     myLayout=new QGridLayout();
     frame->setLayout(myLayout);
     frameLayout->addWidget(frame);
-    label=new QLabel();
-    label->setText(dataMatrix->name);
+    label=new QLabel(dataMatrix->name);
     label->setMaximumWidth(frame->width()-MAXLABELWIDTHDIFF);
     myLayout->addWidget(label,0,0,1,2);
     if (dataMatrix->valueType==global::STRING_TYPE) {
@@ -418,11 +419,9 @@ void MainWindow::addFilters(DataTable *dataTable) {
       myLayout->addWidget(listWidget,1,0,1,1);
       }
     else {
-      label=new QLabel();
-      label->setText(QString::number(dataMatrix->minValue));
+      label=new QLabel(QString::number(dataMatrix->minValue));
       myLayout->addWidget(label,1,0,1,1);
-      label2=new QLabel();
-      label2->setText(QString::number(dataMatrix->maxValue));
+      label2=new QLabel(QString::number(dataMatrix->maxValue));
       label2->setAlignment(Qt::AlignRight);
       myLayout->addWidget(label2,1,1,1,1);
       slider=new ctkRangeSlider(Qt::Horizontal,0);
@@ -443,7 +442,9 @@ void MainWindow::addFilters(DataTable *dataTable) {
 //------------------------------------------------------------------------------
 void MainWindow::CreateTablePlot(DataTable *dataTable) {
   QTableWidget *tableWidget;
+  QLabel *label;
   QGridLayout *myLayout;
+  QVBoxLayout *headLayout;
   WidgetList *widgetList;
 
   widgetList=new WidgetList();
@@ -454,11 +455,15 @@ void MainWindow::CreateTablePlot(DataTable *dataTable) {
   else
     global::GetLastClass(mainWidgetList)->Next=widgetList;
   tableWidget=new QTableWidget();
+  label=new QLabel("Data");
   myLayout=AddTab(widgetList);
-  myLayout->addWidget(tableWidget,0,0);
   widgetList->tablecmb=AddDataTableComboBox(dataTable);
   widgetList->object=tableWidget;
-  myLayout->addWidget(widgetList->tablecmb,0,1,Qt::AlignTop);
+  headLayout=new QVBoxLayout();
+  myLayout->addLayout(headLayout,0,0,Qt::AlignTop);
+  headLayout->addWidget(label);
+  headLayout->addWidget(widgetList->tablecmb);
+  myLayout->addWidget(tableWidget,0,1);
   UpdateTablePlot(widgetList);
   }
 //------------------------------------------------------------------------------
@@ -493,6 +498,8 @@ void MainWindow::UpdateTablePlot(WidgetList *widgetList) {
 //------------------------------------------------------------------------------
 void MainWindow::CreateScatterPlot(DataTable *dataTable) {
   QGridLayout *myLayout;
+  QVBoxLayout *headLayout;
+  QLabel *label;
   QCustomPlot *chart;
   WidgetList *widgetList;
 
@@ -509,14 +516,22 @@ void MainWindow::CreateScatterPlot(DataTable *dataTable) {
     global::GetLastClass(mainWidgetList)->Next=widgetList;
   chart=new QCustomPlot();
   widgetList->object=chart;
-  myLayout=AddTab(widgetList);
-  myLayout->addWidget(chart,0,1);
   widgetList->tablecmb=AddDataTableComboBox(dataTable);
-  myLayout->addWidget(widgetList->tablecmb,0,2,Qt::AlignTop);
   widgetList->yaxiscmb=AddParameterComboBox(dataTable,0);
-  myLayout->addWidget(widgetList->yaxiscmb,0,0,Qt::AlignRight|Qt::AlignVCenter);
   widgetList->xaxiscmb=AddParameterComboBox(dataTable,1);
-  myLayout->addWidget(widgetList->xaxiscmb,1,1,Qt::AlignCenter|Qt::AlignTop);
+  myLayout=AddTab(widgetList);
+  headLayout=new QVBoxLayout();
+  myLayout->addLayout(headLayout,0,0,Qt::AlignTop);
+  label=new QLabel("Data");
+  headLayout->addWidget(label);
+  headLayout->addWidget(widgetList->tablecmb);
+  label=new QLabel("Y Axis");
+  headLayout->addWidget(label);
+  headLayout->addWidget(widgetList->yaxiscmb);
+  label=new QLabel("X Axis");
+  headLayout->addWidget(label);
+  headLayout->addWidget(widgetList->xaxiscmb);
+  myLayout->addWidget(chart,0,1);
   myLayout->setRowStretch(0,1);
   myLayout->setColumnStretch(1,1);
   UpdateScatterPlot(widgetList);
@@ -528,6 +543,7 @@ void MainWindow::UpdateScatterPlot(WidgetList *widgetList) {
   float redd,greend,blued;
   QString titleLegend;
 
+  redd=greend=blued=0;
   plotdata=setPlotData(widgetList);
   chart=(QCustomPlot *)widgetList->object;
   chart->yAxis->setRange(plotdata.dmy->getMinAxis(),plotdata.dmy->getMaxAxis());
