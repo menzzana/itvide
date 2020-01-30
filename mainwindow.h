@@ -82,7 +82,7 @@ class MainWindow : public QMainWindow {
     void filterSliderChanged(ctkRangeSlider *slider,DataTable *dataTable,DataMatrix *dataMatrix);
     void filterListWidgetChanged(QListWidget *listWidget,DataTable *dataTable,DataMatrix *dataMatrix);
     void dataTableChanged(QComboBox *comboBox);
-    void axisChanged(QComboBox *comboBox);
+    void parameterChanged(QComboBox *comboBox);
     void closeTab(int index);
     void switchedTab(int index);
     void axisLabelClick(QCPAxis*,QCPAxis::SelectablePart);
@@ -93,6 +93,7 @@ class MainWindow : public QMainWindow {
     void setChartShapes();
     void setScatterShapes();
     void setChartSizes();
+    void showLegend(WidgetList *widgetList,bool update);
     void addLegendTitle(QCustomPlot *chart,QString title);
 
   private:

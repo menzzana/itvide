@@ -29,6 +29,12 @@
         <height>16777215</height>
        </size>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>9</pointsize>
+        <italic>false</italic>
+       </font>
+      </property>
       <property name="frameShape">
        <enum>QFrame::Box</enum>
       </property>
@@ -41,7 +47,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QTabWidget" name="tabWidget"/>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="font">
+       <font>
+        <pointsize>9</pointsize>
+        <italic>false</italic>
+       </font>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
