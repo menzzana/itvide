@@ -1,16 +1,16 @@
 #include "setchartparameter.h"
 #include "ui_setchartparameter.h"
 //------------------------------------------------------------------------------
-SetChartParameter::SetChartParameter(QWidget *parent) : QDialog(parent),
+setChartParameter::setChartParameter(QWidget *parent) : QDialog(parent),
   ui(new Ui::SetChartParameter) {
   ui->setupUi(this);
   }
 //------------------------------------------------------------------------------
-SetChartParameter::~SetChartParameter() {
+setChartParameter::~setChartParameter() {
   delete ui;
   }
 //------------------------------------------------------------------------------
-void SetChartParameter::removeSizeSlider() {
+void setChartParameter::removeSizeSlider() {
   ui->horizontalSlider->setVisible(false);
   ui->label_2->setVisible(false);
   }

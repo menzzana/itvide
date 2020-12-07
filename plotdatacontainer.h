@@ -34,7 +34,9 @@ class PlotDataContainer {
     QVector<QString> valueText;
     DataMatrix *dmy,*dmx,*dmcolor,*dmshape,*dmsize;
 
+
   PlotDataContainer();
+  void addDistributedTicks(QSharedPointer<QCPAxisTickerText> ticker,QList<QString> *values);
   };
 //------------------------------------------------------------------------------
 #endif // PLOTDATACONTAINER_H

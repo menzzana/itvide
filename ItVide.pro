@@ -24,7 +24,6 @@ SOURCES += main.cpp\
     importwindow.cpp \
     datamatrix.cpp \
     datatable.cpp \
-    global.cpp \
     widgetlist.cpp \
     ctkrangeslider.cpp \
     qcustomplot.cpp \

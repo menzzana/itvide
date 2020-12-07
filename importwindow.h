@@ -41,7 +41,7 @@ class ImportWindow : public QDialog {
     ~ImportWindow();
     bool ImportData(QString fileName);
     void SetDataType(QString stringValue, int *dataType);
-    QStringList DecodeFileRow(QString rowData);
+    QStringList decodeFileRow(QString rowData);
     DataTable *setImportedData();
   
   private:

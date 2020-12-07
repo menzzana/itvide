@@ -40,7 +40,7 @@ bool ImportWindow::ImportData(QString fileName) {
   if (!file.open(QIODevice::ReadOnly|QIODevice::Text))
     return false;
   stream.setDevice(&file);
-  tableHeader=DecodeFileRow(stream.readLine().remove(QRegExp(global::PATTERN)));
+  tableHeader=decodeFileRow(stream.readLine().remove(QRegExp(global::PATTERN)));
   valueTypes=new int[tableHeader.count()];
   for (i1=0; i1<tableHeader.count(); i1++)
     valueTypes[i1]=global::INT_TYPE;
@@ -56,7 +56,7 @@ bool ImportWindow::ImportData(QString fileName) {
       continue;
     tableRows++;
     ui->tableWidget->setRowCount(tableRows+1);
-    tableValues=DecodeFileRow(qs1);
+    tableValues=decodeFileRow(qs1);
     for (i1=0; i1<tableValues.count(); i1++) {
       ui->tableWidget->setItem(tableRows,i1,new QTableWidgetItem(tableValues[i1]));
       SetDataType(tableValues[i1],&valueTypes[i1]);
@@ -75,19 +75,15 @@ bool ImportWindow::ImportData(QString fileName) {
   }
 //------------------------------------------------------------------------------
 void ImportWindow::SetDataType(QString stringValue, int *dataType) {
+  bool ok,value;
+
   if (*dataType==global::STRING_TYPE)
     return;
-  if (stringValue.toDouble()!=(double)stringValue.toInt()) {
-    *dataType=global::DOUBLE_TYPE;
-    return;
-    }
-  if (stringValue.toInt()==0) {
-    *dataType=global::STRING_TYPE;
-    return;
-    }
+  value=(stringValue.toDouble(&ok)==stringValue.toInt());
+  *dataType=ok?!value?global::DOUBLE_TYPE:global::INT_TYPE:global::STRING_TYPE;
   }
 //------------------------------------------------------------------------------
-QStringList ImportWindow::DecodeFileRow(QString rowData) {
+QStringList ImportWindow::decodeFileRow(QString rowData) {
   int i1;
   QString rowEntry;
   QStringList rowResult;

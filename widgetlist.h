@@ -7,15 +7,22 @@
 //------------------------------------------------------------------------------
 class WidgetList {
   public:
-    enum GRAPH_TYPES {TABLEPLOT,SCATTERPLOT};
-    enum COLOR_TYPES {SINGLE,CONTINUOUS,CATEGORICAL};
-    enum COMBO {TABLE,Y,X,COLOR,SIZE,SHAPE};
+    enum GRAPH_TYPES {
+      TABLEVIEW,SCATTERPLOT,BARCHART
+      };
+    enum COLOR_TYPES {
+      SINGLE,CONTINUOUS,CATEGORICAL
+      };
+    enum CATEGORY {
+      TABLE,Y,X,COLOR,SIZE,SHAPE
+      };
     static const int NCOMBO=6;
+    static const int ALWAYSACTIVE=3;
 
     DataTable *datatable;
     QComboBox **combo;
-    bool activecolor,activeshape,activesize;
-    int plottype;
+    bool *active;
+    int plottype,ncombo;
     QColor color1,color2;
     int sizetype;
     int colortype;
@@ -23,7 +30,7 @@ class WidgetList {
     QVBoxLayout *legend;
     class WidgetList *Next;
 
-    WidgetList();
+    WidgetList(int graph_type);
     ~WidgetList();
   };
 //------------------------------------------------------------------------------

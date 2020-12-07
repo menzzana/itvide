@@ -38,7 +38,7 @@ MainWindow::~MainWindow() {
 //------------------------------------------------------------------------------
 // Triggered Actions
 //------------------------------------------------------------------------------
-void MainWindow::ShowContextMenu() {
+void MainWindow::showContextMenu() {
   QMenu *menu;
   QAction *action;
 
@@ -60,7 +60,7 @@ void MainWindow::setChartColor() {
   QPalette pal=palette();
 
   SetChartColor setChartColor(this);
-  populateColumnBox(activeWidgetList->datatable,setChartColor.ui->comboBox,activeWidgetList->combo[WidgetList::COMBO::COLOR]->currentIndex());
+  populateColumnBox(activeWidgetList->datatable,setChartColor.ui->comboBox,activeWidgetList->combo[WidgetList::CATEGORY::COLOR]->currentIndex());
   pal.setColor(QPalette::Background,activeWidgetList->color1);
   setChartColor.ui->widget->setPalette(pal);
   pal.setColor(QPalette::Background,activeWidgetList->color2);
@@ -81,24 +81,24 @@ void MainWindow::setChartColor() {
     activeWidgetList->color2=setChartColor.ui->widget_2->palette().color(QPalette::Background);
     activeWidgetList->colortype=(setChartColor.ui->radioButton->isChecked()?WidgetList::SINGLE:
                                  setChartColor.ui->radioButton_2->isChecked()?WidgetList::CONTINUOUS:WidgetList::CATEGORICAL);
-    activeWidgetList->activecolor=activeWidgetList->colortype!=WidgetList::SINGLE;
-    activeWidgetList->combo[WidgetList::COMBO::COLOR]->setCurrentIndex(setChartColor.ui->comboBox->currentIndex());
-    UpdateScatterPlot(activeWidgetList);
+    activeWidgetList->active[WidgetList::CATEGORY::COLOR]=activeWidgetList->colortype!=WidgetList::SINGLE;
+    activeWidgetList->combo[WidgetList::CATEGORY::COLOR]->setCurrentIndex(setChartColor.ui->comboBox->currentIndex());
+    updateScatterPlot(activeWidgetList);
     showLegend(activeWidgetList,true);
     }
   setChartColor.close();
   }
 //------------------------------------------------------------------------------
 void MainWindow::setChartShapes() {
-  SetChartParameter setChartParameter(this);
+  setChartParameter setChartParameter(this);
   setChartParameter.setWindowTitle("Set Plot Shape");
   setChartParameter.removeSizeSlider();
-  populateColumnBox(activeWidgetList->datatable,setChartParameter.ui->comboBox,activeWidgetList->combo[WidgetList::COMBO::SHAPE]->currentIndex());
-  setChartParameter.ui->CheckBox->setChecked(!activeWidgetList->activeshape);
+  populateColumnBox(activeWidgetList->datatable,setChartParameter.ui->comboBox,activeWidgetList->combo[WidgetList::CATEGORY::SHAPE]->currentIndex());
+  setChartParameter.ui->CheckBox->setChecked(!activeWidgetList->active[WidgetList::CATEGORY::SHAPE]);
   if (setChartParameter.exec()==QDialog::Accepted) {
-    activeWidgetList->activeshape=!setChartParameter.ui->CheckBox->isChecked();
-    activeWidgetList->combo[WidgetList::COMBO::SHAPE]->setCurrentIndex(setChartParameter.ui->comboBox->currentIndex());
-    UpdateScatterPlot(activeWidgetList);
+    activeWidgetList->active[WidgetList::CATEGORY::SHAPE]=!setChartParameter.ui->CheckBox->isChecked();
+    activeWidgetList->combo[WidgetList::CATEGORY::SHAPE]->setCurrentIndex(setChartParameter.ui->comboBox->currentIndex());
+    updateScatterPlot(activeWidgetList);
     showLegend(activeWidgetList,true);
     }
   setChartParameter.close();
@@ -143,15 +143,15 @@ void MainWindow::setScatterShapes() {
   }
 //------------------------------------------------------------------------------
 void MainWindow::setChartSizes() {
-  SetChartParameter setChartParameter(this);
+  setChartParameter setChartParameter(this);
   setChartParameter.setWindowTitle("Set Plot Size");
-  populateColumnBox(activeWidgetList->datatable,setChartParameter.ui->comboBox,activeWidgetList->combo[WidgetList::COMBO::SIZE]->currentIndex());
-  setChartParameter.ui->CheckBox->setChecked(!activeWidgetList->activesize);
+  populateColumnBox(activeWidgetList->datatable,setChartParameter.ui->comboBox,activeWidgetList->combo[WidgetList::CATEGORY::SIZE]->currentIndex());
+  setChartParameter.ui->CheckBox->setChecked(!activeWidgetList->active[WidgetList::CATEGORY::SIZE]);
   setChartParameter.ui->horizontalSlider->setValue(!activeWidgetList->sizetype);
   if (setChartParameter.exec()==QDialog::Accepted) {
-    activeWidgetList->activesize=!setChartParameter.ui->CheckBox->isChecked();
-    activeWidgetList->combo[WidgetList::COMBO::SIZE]->setCurrentIndex(setChartParameter.ui->comboBox->currentIndex());
-    UpdateScatterPlot(activeWidgetList);
+    activeWidgetList->active[WidgetList::CATEGORY::SIZE]=!setChartParameter.ui->CheckBox->isChecked();
+    activeWidgetList->combo[WidgetList::CATEGORY::SIZE]->setCurrentIndex(setChartParameter.ui->comboBox->currentIndex());
+    updateScatterPlot(activeWidgetList);
     activeWidgetList->sizetype=setChartParameter.ui->horizontalSlider->value();
     showLegend(activeWidgetList,true);
     }
@@ -177,8 +177,8 @@ void MainWindow::on_actionImport_triggered() {
       global::GetLastClass(mainDataTable)->Next=dataTable;
     for (WidgetList *widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
       if (widgetList->object!=nullptr)
-        widgetList->combo[WidgetList::COMBO::TABLE]->addItem(dataTable->name);
-    CreateTablePlot(dataTable);
+        widgetList->combo[WidgetList::CATEGORY::TABLE]->addItem(dataTable->name);
+    createTablePlot(dataTable);
     addFilters(dataTable);
     }
   importWindow.close();
@@ -194,12 +194,17 @@ void MainWindow::closeEvent() {
 //------------------------------------------------------------------------------
 void MainWindow::on_actionTable_triggered() {
   if (mainDataTable!=nullptr)
-    CreateTablePlot(mainDataTable);
+    createTablePlot(mainDataTable);
   }
 //------------------------------------------------------------------------------
 void MainWindow::on_actionScatterplot_triggered() {
   if (mainDataTable!=nullptr)
-    CreateScatterPlot(mainDataTable);
+    createScatterPlot(mainDataTable);
+  }
+//------------------------------------------------------------------------------
+void MainWindow::on_actionBarchart_triggered() {
+  if (mainDataTable!=nullptr)
+    createBarChart(mainDataTable);
   }
 //------------------------------------------------------------------------------
 void MainWindow::on_actionReset_Filters_triggered() {
@@ -259,25 +264,15 @@ void MainWindow::dataTableChanged(QComboBox *comboBox) {
   for (int i1=0; i1<comboBox->currentIndex(); i1++)
     dataTable=dataTable->Next;
   for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
-    if (widgetList->combo[WidgetList::COMBO::TABLE]==comboBox) {
+    if (widgetList->combo[WidgetList::CATEGORY::TABLE]==comboBox) {
       widgetList->datatable=dataTable;
-      for (int i1=1; i1<WidgetList::NCOMBO; i1++)
+      for (int i1=1; i1<widgetList->ncombo; i1++)
         populateColumnBox(dataTable,widgetList->combo[i1],0);
-      widgetList->combo[WidgetList::COMBO::X]->setCurrentIndex(1);
+      if (widgetList->combo[WidgetList::CATEGORY::X]!=nullptr)
+        widgetList->combo[WidgetList::CATEGORY::X]->setCurrentIndex(1);
       updatePlot(widgetList);
       return;
       }
-  }
-//------------------------------------------------------------------------------
-void MainWindow::parameterChanged(QComboBox *comboBox) {
-  WidgetList *widgetList;
-
-  for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
-    for (int i1=0; i1<WidgetList::NCOMBO; i1++)
-      if (widgetList->combo[i1]==comboBox) {
-        updatePlot(widgetList);
-        return;
-        }
   }
 //------------------------------------------------------------------------------
 void MainWindow::closeTab(int index) {
@@ -309,11 +304,14 @@ void MainWindow::updatePlot(WidgetList *widgetList) {
   if (widgetList->object==nullptr)
     return;
   switch(widgetList->plottype) {
-    case WidgetList::TABLEPLOT:
-      UpdateTablePlot(widgetList);
+    case WidgetList::TABLEVIEW:
+      updateTablePlot(widgetList);
       break;
     case WidgetList::SCATTERPLOT:
-      UpdateScatterPlot(widgetList);
+      updateScatterPlot(widgetList);
+      break;
+    case WidgetList::BARCHART:
+      updateBarChart(widgetList);
       break;
     }
   }
@@ -361,14 +359,14 @@ QComboBox *MainWindow::AddDataTableComboBox(DataTable *myDataTable) {
   return comboBox;
   }
 //------------------------------------------------------------------------------
-QComboBox *MainWindow::AddParameterComboBox(DataTable *dataTable,int index) {
+QComboBox *MainWindow::AddParameterComboBox(WidgetList *widgetList,int index) {
   QComboBox *comboBox;
 
   comboBox=new QComboBox();
   comboBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-  populateColumnBox(dataTable,comboBox,index);
+  populateColumnBox(widgetList->datatable,comboBox,index);
   connect(comboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),[=] {
-      parameterChanged(comboBox);
+      updatePlot(widgetList);
       }
     );
   return comboBox;
@@ -401,7 +399,7 @@ void MainWindow::addFilters(DataTable *dataTable) {
   frame->setFrameShape(QFrame::Box);
   frameLayout=new QVBoxLayout();
   frame->setLayout(frameLayout);
-  frame->setProperty(PROPERTIES::TABLEID,dataTable->id);
+  frame->setMinimumWidth(10);
   ui->toolBox->addItem(frame,dataTable->name);
   for (dataMatrix=dataTable->dataMatrix; dataMatrix!=nullptr; dataMatrix=dataMatrix->Next) {
     frame=new QFrame();
@@ -448,32 +446,23 @@ void MainWindow::addFilters(DataTable *dataTable) {
     }
   }
 //------------------------------------------------------------------------------
-void MainWindow::CreateTablePlot(DataTable *dataTable) {
+void MainWindow::createTablePlot(DataTable *dataTable) {
   QTableWidget *tableWidget;
   QGridLayout *myLayout;
-  QVBoxLayout *legend;
   WidgetList *widgetList;
 
-  widgetList=new WidgetList();
-  widgetList->datatable=dataTable;
-  widgetList->plottype=WidgetList::TABLEPLOT;
-  if (mainWidgetList==nullptr)
-    mainWidgetList=widgetList;
-  else
-    global::GetLastClass(mainWidgetList)->Next=widgetList;
-  tableWidget=new QTableWidget();
-  myLayout=AddTab(widgetList);
-  widgetList->combo[WidgetList::COMBO::TABLE]=AddDataTableComboBox(dataTable);
-  widgetList->object=tableWidget;
-  legend=new QVBoxLayout();
-  widgetList->legend=legend;
-  myLayout->addLayout(legend,0,0,Qt::AlignTop);
+  widgetList=createPlotData(dataTable,WidgetList::TABLEVIEW);
+  widgetList->combo[WidgetList::CATEGORY::TABLE]=AddDataTableComboBox(dataTable);
   showLegend(widgetList,false);
+  tableWidget=new QTableWidget();
+  widgetList->object=tableWidget;
+  myLayout=AddTab(widgetList);
+  myLayout->addLayout(widgetList->legend,0,0,Qt::AlignTop);
   myLayout->addWidget(tableWidget,0,1);
-  UpdateTablePlot(widgetList);
+  updateTablePlot(widgetList);
   }
 //------------------------------------------------------------------------------
-void MainWindow::UpdateTablePlot(WidgetList *widgetList) {
+void MainWindow::updateTablePlot(WidgetList *widgetList) {
   QStringList tableHeader;
   DataMatrix *dataMatrix;
   DataTable *dataTable;
@@ -502,9 +491,8 @@ void MainWindow::UpdateTablePlot(WidgetList *widgetList) {
   tableWidget->setRowCount(y1);
   }
 //------------------------------------------------------------------------------
-void MainWindow::CreateScatterPlot(DataTable *dataTable) {
+void MainWindow::createScatterPlot(DataTable *dataTable) {
   QGridLayout *myLayout;
-  QVBoxLayout *legend;
   QCustomPlot *chart;
   WidgetList *widgetList;
 
@@ -512,33 +500,30 @@ void MainWindow::CreateScatterPlot(DataTable *dataTable) {
     QMessageBox::about(this,"Cannot draw plot","Too little data");
     return;
     }
-  widgetList=new WidgetList();
-  widgetList->datatable=dataTable;
-  widgetList->plottype=WidgetList::SCATTERPLOT;
-  if (mainWidgetList==nullptr)
-    mainWidgetList=widgetList;
-  else
-    global::GetLastClass(mainWidgetList)->Next=widgetList;
+  widgetList=createPlotData(dataTable,WidgetList::SCATTERPLOT);
   chart=new QCustomPlot();
-  legend=new QVBoxLayout();
   widgetList->object=chart;
-  widgetList->legend=legend;
-  widgetList->combo[WidgetList::COMBO::TABLE]=AddDataTableComboBox(dataTable);
-  widgetList->combo[WidgetList::COMBO::Y]=AddParameterComboBox(dataTable,0);
-  widgetList->combo[WidgetList::COMBO::X]=AddParameterComboBox(dataTable,1);
-  widgetList->combo[WidgetList::COMBO::COLOR]=AddParameterComboBox(dataTable,0);
-  widgetList->combo[WidgetList::COMBO::SHAPE]=AddParameterComboBox(dataTable,0);
-  widgetList->combo[WidgetList::COMBO::SIZE]=AddParameterComboBox(dataTable,0);
+  chart->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(chart,&QCustomPlot::customContextMenuRequested,[=] {
+      showContextMenu();
+      }
+    );
+  widgetList->combo[WidgetList::CATEGORY::TABLE]=AddDataTableComboBox(dataTable);
+  widgetList->combo[WidgetList::CATEGORY::Y]=AddParameterComboBox(widgetList,0);
+  widgetList->combo[WidgetList::CATEGORY::X]=AddParameterComboBox(widgetList,1);
+  widgetList->combo[WidgetList::CATEGORY::COLOR]=AddParameterComboBox(widgetList,0);
+  widgetList->combo[WidgetList::CATEGORY::SHAPE]=AddParameterComboBox(widgetList,0);
+  widgetList->combo[WidgetList::CATEGORY::SIZE]=AddParameterComboBox(widgetList,0);
   myLayout=AddTab(widgetList);
-  myLayout->addLayout(legend,0,0,Qt::AlignTop);
+  myLayout->addLayout(widgetList->legend,0,0,Qt::AlignTop);
   showLegend(widgetList,false);
   myLayout->addWidget(chart,0,1);
   myLayout->setRowStretch(0,1);
   myLayout->setColumnStretch(1,1);
-  UpdateScatterPlot(widgetList);
+  updateScatterPlot(widgetList);
   }
 //------------------------------------------------------------------------------
-void MainWindow::UpdateScatterPlot(WidgetList *widgetList) {
+void MainWindow::updateScatterPlot(WidgetList *widgetList) {
   QCustomPlot *chart;
   PlotDataContainer plotdata;
   float redd,greend,blued;
@@ -547,16 +532,33 @@ void MainWindow::UpdateScatterPlot(WidgetList *widgetList) {
   redd=greend=blued=0;
   plotdata=setPlotData(widgetList);
   chart=(QCustomPlot *)widgetList->object;
-  chart->yAxis->setRange(plotdata.dmy->getMinAxis(),plotdata.dmy->getMaxAxis());
-  chart->xAxis->setRange(plotdata.dmx->getMinAxis(),plotdata.dmx->getMaxAxis());
   chart->yAxis->setLabel(plotdata.dmy->name);
   chart->xAxis->setLabel(plotdata.dmx->name);
+  chart->yAxis->setRange(plotdata.dmy->getMinAxis(),plotdata.dmy->getMaxAxis());
+  chart->xAxis->setRange(plotdata.dmx->getMinAxis(),plotdata.dmx->getMaxAxis());
+  if (plotdata.dmy->valueType==global::STRING_TYPE) {
+    QSharedPointer<QCPAxisTickerText> yticker(new QCPAxisTickerText);
+    plotdata.addDistributedTicks(yticker,plotdata.dmy->uniqueValue);
+    chart->yAxis->setTicker(yticker);
+    chart->yAxis->setTickLabelRotation(60);
+    }
+  else {
+    QSharedPointer<QCPAxisTicker> yticker(new QCPAxisTicker());
+    chart->yAxis->setTicker(yticker);
+    chart->yAxis->setTickLabelRotation(0);
+    }
+  if (plotdata.dmx->valueType==global::STRING_TYPE) {
+    QSharedPointer<QCPAxisTickerText> xticker(new QCPAxisTickerText);
+    plotdata.addDistributedTicks(xticker,plotdata.dmx->uniqueValue);
+    chart->xAxis->setTicker(xticker);
+    chart->xAxis->setTickLabelRotation(60);
+    }
+  else {
+    QSharedPointer<QCPAxisTicker> xticker(new QCPAxisTicker());
+    chart->xAxis->setTicker(xticker);
+    chart->xAxis->setTickLabelRotation(0);
+    }
   //connect(chart,SIGNAL(axisClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)),this,SLOT(axisLabelClick(QCPAxis*,QCPAxis::SelectablePart)));
-  chart->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(chart,static_cast<void(QCustomPlot::*)(const QPoint &)>(&QCustomPlot::customContextMenuRequested),[=] {
-      ShowContextMenu();
-      }
-    );
   chart->clearGraphs();
   chart->clearItems();
   /*
@@ -580,6 +582,7 @@ void MainWindow::UpdateScatterPlot(WidgetList *widgetList) {
     if (plotdata.ydata[bin].size()==0)
       continue;
     QCPGraph *graph=chart->addGraph();
+    graph->setLineStyle(QCPGraph::lsNone);
     graph->setName(plotdata.valueText[bin]);
     switch (widgetList->colortype) {
       case WidgetList::SINGLE:
@@ -605,10 +608,108 @@ void MainWindow::UpdateScatterPlot(WidgetList *widgetList) {
                                                widgetList->sizetype*plotdata.plotTypes[bin][SIZE]));
         break;
       }
-    graph->setLineStyle(QCPGraph::lsNone);
     graph->addData(plotdata.xdata[bin],plotdata.ydata[bin]);
     }
   // http://www.qcustomplot.com/documentation/thelayoutsystem.html
+  chart->replot();
+  }
+//------------------------------------------------------------------------------
+void MainWindow::createBarChart(DataTable *dataTable) {
+  QGridLayout *myLayout;
+  QCustomPlot *chart;
+  WidgetList *widgetList;
+
+  if (dataTable->dataMatrix->Next==nullptr) {
+    QMessageBox::about(this,"Cannot draw plot","Too little data");
+    return;
+    }
+  widgetList=createPlotData(dataTable,WidgetList::BARCHART);
+  chart=new QCustomPlot();
+  widgetList->object=chart;
+  chart->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(chart,&QCustomPlot::customContextMenuRequested,[=] {
+      showContextMenu();
+      }
+    );
+  widgetList->combo[WidgetList::CATEGORY::TABLE]=AddDataTableComboBox(dataTable);
+  widgetList->combo[WidgetList::CATEGORY::Y]=AddParameterComboBox(widgetList,0);
+  widgetList->combo[WidgetList::CATEGORY::X]=AddParameterComboBox(widgetList,1);
+  widgetList->combo[WidgetList::CATEGORY::COLOR]=AddParameterComboBox(widgetList,0);
+  myLayout=AddTab(widgetList);
+  myLayout->addLayout(widgetList->legend,0,0,Qt::AlignTop);
+  showLegend(widgetList,false);
+  myLayout->addWidget(chart,0,1);
+  myLayout->setRowStretch(0,1);
+  myLayout->setColumnStretch(1,1);
+  updateBarChart(widgetList);
+  }
+//------------------------------------------------------------------------------
+void MainWindow::updateBarChart(WidgetList *widgetList) {
+  QCustomPlot *chart;
+  PlotDataContainer plotdata;
+  QString titleLegend;
+
+  plotdata=setPlotData(widgetList);
+  chart=(QCustomPlot *)widgetList->object;
+  chart->yAxis->setRange(plotdata.dmy->getMinAxis(),plotdata.dmy->getMaxAxis());
+  chart->xAxis->setRange(plotdata.dmx->getMinAxis(),plotdata.dmx->getMaxAxis());
+  chart->yAxis->setLabel(plotdata.dmy->name);
+  chart->xAxis->setLabel(plotdata.dmx->name);
+  if (plotdata.dmy->valueType==global::STRING_TYPE) {
+    QSharedPointer<QCPAxisTickerText> yticker(new QCPAxisTickerText);
+    plotdata.addDistributedTicks(yticker,plotdata.dmy->uniqueValue);
+    chart->yAxis->setTicker(yticker);
+    chart->yAxis->setTickLabelRotation(60);
+    }
+  else {
+    QSharedPointer<QCPAxisTicker> yticker(new QCPAxisTicker());
+    chart->yAxis->setTicker(yticker);
+    chart->yAxis->setTickLabelRotation(0);
+    }
+  if (plotdata.dmx->valueType==global::STRING_TYPE) {
+    QSharedPointer<QCPAxisTickerText> xticker(new QCPAxisTickerText);
+    plotdata.addDistributedTicks(xticker,plotdata.dmx->uniqueValue);
+    chart->xAxis->setTicker(xticker);
+    chart->xAxis->setTickLabelRotation(60);
+    }
+  else {
+    QSharedPointer<QCPAxisTicker> xticker(new QCPAxisTicker());
+    chart->xAxis->setTicker(xticker);
+    chart->xAxis->setTickLabelRotation(0);
+    }
+  chart->clearGraphs();
+  chart->clearItems();
+  for (int bin=0; bin<plotdata.ydata.size(); bin++) {
+    if (plotdata.ydata[bin].size()==0)
+      continue;
+    QCPBars *graph=new QCPBars(chart->xAxis, chart->yAxis);
+    graph->setAntialiased(false);
+    graph->setStackingGap(1);
+    graph->setName(plotdata.valueText[bin]);
+    graph->setBrush(QBrush(Qt::GlobalColor(COLORTYPES[plotdata.plotTypes[bin][COLOR]%ARRAY_SIZE(COLORTYPES)])));
+    /*
+    chart->xAxis->setBasePen(QPen(Qt::darkGray,4));
+    chart->xAxis->setTickPen(QPen(Qt::darkGray,4));
+    chart->xAxis->grid()->setVisible(true);
+    chart->xAxis->grid()->setPen(QPen(Qt::darkGray, 0, Qt::DotLine));
+    chart->xAxis->setTickLabelColor(Qt::darkGray);
+    chart->xAxis->setLabelColor(Qt::darkGray);
+
+    chart->yAxis->setPadding(5);
+    chart->yAxis->setBasePen(QPen(Qt::darkGray,4));
+    chart->yAxis->setTickPen(QPen(Qt::darkGray,4));
+    chart->yAxis->setSubTickPen(QPen(Qt::darkGray,4));
+    chart->yAxis->grid()->setSubGridVisible(true);
+    chart->yAxis->setTickLabelColor(Qt::darkGray);
+    chart->yAxis->setLabelColor(Qt::darkGray);
+    chart->yAxis->grid()->setPen(QPen(Qt::darkGray, 0, Qt::SolidLine));
+    chart->yAxis->grid()->setSubGridPen(QPen(Qt::darkGray, 0, Qt::DotLine));
+    */
+
+
+    graph->setData(plotdata.xdata[bin],plotdata.ydata[bin]);
+    }
+  // https://www.qcustomplot.com/index.php/demos/barchartdemo
   chart->replot();
   }
 //------------------------------------------------------------------------------
@@ -617,18 +718,26 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
   PlotDataContainer plotdata;
   int idx,nbins,uniqueIndex,totalIndex;
 
-  for (idx=0,dataMatrix=widgetList->datatable->dataMatrix; dataMatrix!=nullptr; idx++,dataMatrix=dataMatrix->Next) {
-    if (idx==widgetList->combo[WidgetList::COMBO::Y]->currentIndex())
-      plotdata.dmy=dataMatrix;
-    if (idx==widgetList->combo[WidgetList::COMBO::X]->currentIndex())
-      plotdata.dmx=dataMatrix;
-    if (idx==widgetList->combo[WidgetList::COMBO::COLOR]->currentIndex() && widgetList->activecolor)
-      plotdata.dmcolor=dataMatrix;
-    if (idx==widgetList->combo[WidgetList::COMBO::SHAPE]->currentIndex() && widgetList->activeshape)
-      plotdata.dmshape=dataMatrix;
-    if (idx==widgetList->combo[WidgetList::COMBO::SIZE]->currentIndex() && widgetList->activesize)
-      plotdata.dmsize=dataMatrix;
-    }
+  for (idx=0,dataMatrix=widgetList->datatable->dataMatrix; dataMatrix!=nullptr; idx++,dataMatrix=dataMatrix->Next)
+    for (int i1=1; i1<widgetList->ncombo; i1++)
+      if (widgetList->active[i1] && idx==widgetList->combo[i1]->currentIndex())
+        switch (i1) {
+          case WidgetList::CATEGORY::Y:
+            plotdata.dmy=dataMatrix;
+            break;
+          case WidgetList::CATEGORY::X:
+            plotdata.dmx=dataMatrix;
+            break;
+          case WidgetList::CATEGORY::COLOR:
+            plotdata.dmcolor=dataMatrix;
+            break;
+          case WidgetList::CATEGORY::SHAPE:
+            plotdata.dmshape=dataMatrix;
+            break;
+          case WidgetList::CATEGORY::SIZE:
+            plotdata.dmsize=dataMatrix;
+            break;
+          }
   nbins=(plotdata.dmcolor!=nullptr?plotdata.dmcolor->intervals:1)*
         (plotdata.dmshape!=nullptr?plotdata.dmshape->intervals:1)*
         (plotdata.dmsize!=nullptr?plotdata.dmsize->intervals:1);
@@ -661,8 +770,16 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
       }
     if (plotdata.dmsize!=nullptr)
       uniqueIndex=totalIndex*plotdata.dmsize->uniqueIndex[y]+uniqueIndex;
-    plotdata.ydata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmy->value[y].toDouble();
-    plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->value[y].toDouble();
+    if (plotdata.dmy->valueType==global::STRING_TYPE) {
+      plotdata.ydata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmy->uniqueValue->indexOf(plotdata.dmy->value[y]);
+      }
+    else
+      plotdata.ydata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmy->value[y].toDouble();
+    if (plotdata.dmx->valueType==global::STRING_TYPE) {
+      plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->uniqueValue->indexOf(plotdata.dmx->value[y]);
+      }
+    else
+      plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->value[y].toDouble();
     indx[uniqueIndex]++;
     if (indx[uniqueIndex]>1)
       continue;
@@ -690,39 +807,33 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
   return plotdata;
   }
 //------------------------------------------------------------------------------
+WidgetList *MainWindow::createPlotData(DataTable *dataTable,int graphtype) {
+  QVBoxLayout *legend;
+  WidgetList *widgetList;
+
+  widgetList=new WidgetList(graphtype);
+  widgetList->datatable=dataTable;
+  if (mainWidgetList==nullptr)
+    mainWidgetList=widgetList;
+  else
+    global::GetLastClass(mainWidgetList)->Next=widgetList;
+  legend=new QVBoxLayout();
+  widgetList->legend=legend;
+  return widgetList;
+  }
+//------------------------------------------------------------------------------
 void MainWindow::showLegend(WidgetList *widgetList,bool update) {
   QLabel *label;
-
-  if (!update) {
-    label=new QLabel("Data");
-    widgetList->legend->addWidget(label);
-    widgetList->legend->addWidget(widgetList->combo[WidgetList::COMBO::TABLE]);
-    switch(widgetList->plottype) {
-      case WidgetList::SCATTERPLOT:
-        label=new QLabel("Y Axis");
-        widgetList->legend->addWidget(label);
-        widgetList->legend->addWidget(widgetList->combo[WidgetList::COMBO::Y]);
-        label=new QLabel("X Axis");
-        widgetList->legend->addWidget(label);
-        widgetList->legend->addWidget(widgetList->combo[WidgetList::COMBO::X]);
-        label=new QLabel("Colour");
-        widgetList->legend->addWidget(label);
-        widgetList->legend->addWidget(widgetList->combo[WidgetList::COMBO::COLOR]);
-        label=new QLabel("Shape");
-        widgetList->legend->addWidget(label);
-        widgetList->legend->addWidget(widgetList->combo[WidgetList::COMBO::SHAPE]);
-        label=new QLabel("Size");
-        widgetList->legend->addWidget(label);
-        widgetList->legend->addWidget(widgetList->combo[WidgetList::COMBO::SIZE]);
-        break;
+  const QString CATEGORY_TEXT[]={
+    "Data","Y Axis","X Axis","Colour","Shape","Size"
+    };
+  for (int i1=0; i1<widgetList->ncombo; i1++) {
+    if (!update) {
+      label=new QLabel(CATEGORY_TEXT[i1]);
+      widgetList->legend->addWidget(label);
+      widgetList->legend->addWidget(widgetList->combo[i1]);
       }
-    }
-  switch(widgetList->plottype) {
-    case WidgetList::SCATTERPLOT:
-      widgetList->combo[WidgetList::COMBO::COLOR]->setEnabled(widgetList->activecolor);
-      widgetList->combo[WidgetList::COMBO::SHAPE]->setEnabled(widgetList->activeshape);
-      widgetList->combo[WidgetList::COMBO::SIZE]->setEnabled(widgetList->activesize);
-      break;
+    widgetList->combo[i1]->setEnabled(widgetList->active[i1]);
     }
   }
 //------------------------------------------------------------------------------
@@ -736,3 +847,4 @@ void MainWindow::addLegendTitle(QCustomPlot *chart,QString title) {
   chart->legend->addElement(0,0,legendTitle);
   }
 //------------------------------------------------------------------------------
+

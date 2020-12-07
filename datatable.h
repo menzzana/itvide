@@ -29,7 +29,7 @@ using namespace std;
 class DataTable {
   public:
     QString name;
-    int id,size;
+    int size;
     DataMatrix *dataMatrix;
     class DataTable *Next;
 

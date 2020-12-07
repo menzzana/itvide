@@ -21,4 +21,11 @@ PlotDataContainer::PlotDataContainer() {
   dmy=dmx=dmcolor=dmshape=dmsize=nullptr;
   }
 //------------------------------------------------------------------------------
+void PlotDataContainer::addDistributedTicks(QSharedPointer<QCPAxisTickerText> ticker,QList<QString> *values) {
+  int dist;
 
+  dist=values->size()/global::PREFERRED_TICK_COUNT;
+  for (int i1=0; i1<values->size(); i1+=dist)
+    ticker->addTick(i1,values->at(i1));
+  }
+//------------------------------------------------------------------------------

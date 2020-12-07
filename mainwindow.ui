@@ -64,7 +64,7 @@
      <x>0</x>
      <y>0</y>
      <width>881</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -80,6 +80,7 @@
     </property>
     <addaction name="actionTable"/>
     <addaction name="actionScatterplot"/>
+    <addaction name="actionBarchart"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -123,6 +124,11 @@
   <action name="actionReset_Filters">
    <property name="text">
     <string>&amp;Reset Filters</string>
+   </property>
+  </action>
+  <action name="actionBarchart">
+   <property name="text">
+    <string>Barchart</string>
    </property>
   </action>
  </widget>

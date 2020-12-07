@@ -64,14 +64,17 @@ class MainWindow : public QMainWindow {
     ~MainWindow();
     QGridLayout *AddTab(WidgetList *widgetList);
     QComboBox *AddDataTableComboBox(DataTable *myDataTable);
-    QComboBox *AddParameterComboBox(DataTable *dataTable,int index);
+    QComboBox *AddParameterComboBox(WidgetList *widgetList,int index);
     void populateColumnBox(DataTable *myDataTable,QComboBox *comboBox,int index);
     void addFilters(DataTable *dataTable);
-    void CreateTablePlot(DataTable *dataTable);
-    void UpdateTablePlot(WidgetList *widgetList);
-    void CreateScatterPlot(DataTable *dataTable);
-    void UpdateScatterPlot(WidgetList *widgetList);
+    void createTablePlot(DataTable *dataTable);
+    void updateTablePlot(WidgetList *widgetList);
+    void createScatterPlot(DataTable *dataTable);
+    void updateScatterPlot(WidgetList *widgetList);
+    void createBarChart(DataTable *dataTable);
+    void updateBarChart(WidgetList *widgetList);
     PlotDataContainer setPlotData(WidgetList *widgetList);
+    WidgetList *createPlotData(DataTable *dataTable,int graphtype);
 
   private slots:
     void on_actionImport_triggered();
@@ -82,21 +85,21 @@ class MainWindow : public QMainWindow {
     void filterSliderChanged(ctkRangeSlider *slider,DataTable *dataTable,DataMatrix *dataMatrix);
     void filterListWidgetChanged(QListWidget *listWidget,DataTable *dataTable,DataMatrix *dataMatrix);
     void dataTableChanged(QComboBox *comboBox);
-    void parameterChanged(QComboBox *comboBox);
     void closeTab(int index);
     void switchedTab(int index);
     void axisLabelClick(QCPAxis*,QCPAxis::SelectablePart);
     void updatePlot(WidgetList *widgetList);
     void on_actionReset_Filters_triggered();
-    void ShowContextMenu();
+    void showContextMenu();
     void setChartColor();
     void setChartShapes();
     void setScatterShapes();
     void setChartSizes();
     void showLegend(WidgetList *widgetList,bool update);
     void addLegendTitle(QCustomPlot *chart,QString title);
+    void on_actionBarchart_triggered();
 
-  private:
+    private:
     Ui::MainWindow *ui;
     const int RANGESLIDERMIN=1;
     const int RANGESLIDERMAX=2;

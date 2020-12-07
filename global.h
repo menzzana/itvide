@@ -33,6 +33,7 @@ namespace global {
   const int STRING_LENGTH=80;
   const int SPANSLIDER_SIZE=1000;
   const int SCATTERSHAPES_LENGTH=17;
+  const int PREFERRED_TICK_COUNT=10;
   const QStringList comboList=QStringList()<<"Integer"<<"Double"<<"String";
   const char DELIMITERS[]=",\t";
   const char SEPARATOR='\"';

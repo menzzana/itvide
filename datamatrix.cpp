@@ -19,11 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
 DataMatrix::DataMatrix() {
   name="";
-  id=global::getUniqueIdentifier();
   value=nullptr;
   Visible=nullptr;
-  uniqueValue=nullptr;
-  uniqueIndex=nullptr;
   valueType=global::INT_TYPE;
   intervals=0;
   minValue=maxValue=0;
@@ -31,8 +28,6 @@ DataMatrix::DataMatrix() {
   }
 //------------------------------------------------------------------------------
 DataMatrix::~DataMatrix() {
-  delete uniqueValue;
-  delete uniqueIndex;
   delete value;
   delete Visible;
   delete Next;
@@ -60,18 +55,16 @@ double DataMatrix::getActualValue(int position) {
   return getValuePerInterval()*(double)position+minValue;
   }
 //------------------------------------------------------------------------------
-int DataMatrix::getInt(int index) {
-  if (valueType!=global::INT_TYPE)
-    throw ERROR_TEXT::DATAMATRIX_NO_INTEGER;
-  return value[index].toInt();
-  }
-//------------------------------------------------------------------------------
 void DataMatrix::setMinMaxValues() {
-  if (valueType==global::STRING_TYPE)
-    return;
-  maxValue=minValue=uniqueValue->first().toDouble();
-  if (uniqueValue->size()>0)
-    maxValue=uniqueValue->last().toDouble();
+  if (valueType==global::STRING_TYPE) {
+    minValue=0;
+    maxValue=uniqueValue->size();
+    }
+  else {
+    maxValue=minValue=uniqueValue->first().toDouble();
+    if (uniqueValue->size()>0)
+      maxValue=uniqueValue->last().toDouble();
+    }
   }
 //------------------------------------------------------------------------------
 void DataMatrix::setIntervals() {
@@ -85,7 +78,7 @@ void DataMatrix::setUniqueStringList(int index) {
   }
 //------------------------------------------------------------------------------
 void DataMatrix::setUniqueIndex(int size) {
-  uniqueIndex=new int[size];
+  uniqueIndex.resize(size);
   for (int idx=0; idx<size; idx++)
     uniqueIndex[idx]=uniqueValue->indexOf(value[idx]);
   }

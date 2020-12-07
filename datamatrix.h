@@ -31,8 +31,8 @@ class DataMatrix {
     const double RATIO_BUFFER=0.05;
   public:
     QString name;
-    int id,valueType,intervals;
-    int *uniqueIndex;
+    int valueType,intervals;
+    QVector<int> uniqueIndex;
     QString *value;
     bool *Visible;
     QList<QString> *uniqueValue;
@@ -40,7 +40,6 @@ class DataMatrix {
     class DataMatrix *Next;
 
     DataMatrix();
-    int getInt(int index);
     double getValuePerInterval();
     double getAxisBuffer();
     double getMinAxis();

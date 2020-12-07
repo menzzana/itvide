@@ -7,12 +7,12 @@ namespace Ui {
   class SetChartParameter;
   }
 //------------------------------------------------------------------------------
-class SetChartParameter : public QDialog {
+class setChartParameter : public QDialog {
   Q_OBJECT
 
   public:
-  explicit SetChartParameter(QWidget *parent = 0);
-  ~SetChartParameter();
+  explicit setChartParameter(QWidget *parent = 0);
+  ~setChartParameter();
   void removeSizeSlider();
 
   Ui::SetChartParameter *ui;

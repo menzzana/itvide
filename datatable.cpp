@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
 DataTable::DataTable() {
   name="";
-  id=global::getUniqueIdentifier();
   size=0;
   dataMatrix=nullptr;
   Next=nullptr;
