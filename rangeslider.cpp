@@ -66,8 +66,8 @@ void RangeSlider::mousePressEvent(QMouseEvent *event) {
       m_upperPressed = false;
       }
     else if (upperHandleRect().contains(event->pos())) {
-      m_upperPressed = true;
       m_lowerPressed = false;
+      m_upperPressed = true;
       }
     else {
       int newPosition = valueFromPosition(event->pos().x());
@@ -82,8 +82,8 @@ void RangeSlider::mousePressEvent(QMouseEvent *event) {
         }
       else {
         setUpperValue(newPosition);
-        m_upperPressed = true;
         m_lowerPressed = false;
+        m_upperPressed = true;
         }
       }
     }

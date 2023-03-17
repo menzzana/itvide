@@ -34,12 +34,12 @@ namespace global {
   const int SPANSLIDER_SIZE=1000;
   const int SCATTERSHAPES_LENGTH=17;
   const int PREFERRED_TICK_COUNT=10;
-  const QStringList comboList=QStringList()<<"Integer"<<"Double"<<"String";
+  const QStringList comboList=QStringList()<<"Integer"<<"Double"<<"String"<<"Skip";
   const char DELIMITERS[]=",\t";
   const char SEPARATOR='\"';
   const char PATTERN[]="\\s+$";
   enum VARIABLE_TYPE {
-    INT_TYPE,DOUBLE_TYPE,STRING_TYPE
+    INT_TYPE,DOUBLE_TYPE,STRING_TYPE,SKIP_TYPE
     };
   enum AGGREGATION_TYPE {
     NONE,COUNT,SUM,AVERAGE

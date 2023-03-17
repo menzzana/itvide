@@ -10,6 +10,8 @@ This software visualizes big data similarly to softwares as many Business Intell
 this kind of approach is also viable for the scientific or big data area.
 At the moment the software can only import csv files.
 
+.. image:: https://user-images.githubusercontent.com/6664679/225952543-c827d86c-c175-48ab-94de-934c8ffeafc7.png
+
 BUILDING (from source bundle)
 -----------------------------
 

@@ -82,6 +82,8 @@ class MainWindow : public QMainWindow {
     void on_actionQuit_triggered();
     void on_actionTable_triggered();
     void on_actionScatterplot_triggered();
+    void on_actionBarchart_triggered();
+    void on_actionReset_Filters_triggered();
     void closeEvent();
     void filterSliderChanged(RangeSlider *slider,DataTable *dataTable,DataMatrix *dataMatrix);
     void filterListWidgetChanged(QListWidget *listWidget,DataTable *dataTable,DataMatrix *dataMatrix);
@@ -90,7 +92,6 @@ class MainWindow : public QMainWindow {
     void switchedTab(int index);
     void axisLabelClick(QCPAxis*,QCPAxis::SelectablePart);
     void updatePlot(WidgetList *widgetList);
-    void on_actionReset_Filters_triggered();
     void showContextMenu();
     void setChartColor();
     void setChartShapes();
@@ -98,7 +99,6 @@ class MainWindow : public QMainWindow {
     void setChartSizes();
     void showLegend(WidgetList *widgetList,bool update);
     void addLegendTitle(QCustomPlot *chart,QString title);
-    void on_actionBarchart_triggered();
 
   private:
     Ui::MainWindow *ui;

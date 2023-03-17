@@ -43,7 +43,7 @@ bool ImportWindow::ImportData(QString fileName) {
   tableHeader=decodeFileRow(stream.readLine().remove(QRegularExpression(global::PATTERN)));
   valueTypes=new int[tableHeader.count()];
   for (i1=0; i1<tableHeader.count(); i1++)
-    valueTypes[i1]=global::INT_TYPE;
+    valueTypes[i1]=tableHeader[i1].isEmpty()?global::SKIP_TYPE:global::INT_TYPE;
   tableRows=0;
   ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
   ui->tableWidget->setColumnCount(tableHeader.count());
@@ -51,7 +51,7 @@ bool ImportWindow::ImportData(QString fileName) {
   ui->tableWidget->verticalHeader()->setVisible(false);
   ui->tableWidget->setHorizontalHeaderLabels(tableHeader);
   while (!stream.atEnd()) {
-      qs1=stream.readLine().remove(QRegularExpression(global::PATTERN));
+    qs1=stream.readLine().remove(QRegularExpression(global::PATTERN));
     if (qs1.isEmpty())
       continue;
     tableRows++;
@@ -77,7 +77,7 @@ bool ImportWindow::ImportData(QString fileName) {
 void ImportWindow::SetDataType(QString stringValue, int *dataType) {
   bool ok,value;
 
-  if (*dataType==global::STRING_TYPE)
+  if (*dataType==global::STRING_TYPE || *dataType==global::SKIP_TYPE)
     return;
   value=(stringValue.toDouble(&ok)==stringValue.toInt());
   *dataType=ok?!value?global::DOUBLE_TYPE:global::INT_TYPE:global::STRING_TYPE;
@@ -118,10 +118,12 @@ DataTable *ImportWindow::setImportedData() {
   dataTable->size=ui->tableWidget->rowCount()-1;
   lastDataMatrix=nullptr;
   for (i1=0; i1<ui->tableWidget->columnCount(); i1++) {
+    comboBox=(QComboBox *)ui->tableWidget->cellWidget(0,i1);
+    if (comboBox->currentIndex()==global::SKIP_TYPE)
+      continue;
     dataMatrix=new DataMatrix();
     dataMatrix->intervals=global::DEFAULT_INTERVAL;
     dataMatrix->name=global::SetDataName(dataTable->dataMatrix,ui->tableWidget->horizontalHeaderItem(i1)->text());
-    comboBox=(QComboBox *)ui->tableWidget->cellWidget(0,i1);
     dataMatrix->valueType=comboBox->currentIndex();
     dataMatrix->value=new QString[dataTable->size];
     dataMatrix->Visible=new bool[dataTable->size];

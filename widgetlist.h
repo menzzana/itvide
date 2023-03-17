@@ -14,7 +14,7 @@ class WidgetList {
       SINGLE,CONTINUOUS,CATEGORICAL
       };
     enum CATEGORY {
-      TABLE,Y,X,COLOR,SIZE,SHAPE,AGGREGATION
+      TABLE,Y,X,COLOR,SHAPE,SIZE,AGGREGATION
       };
     static const int NCOMBO=7;
     DataTable *datatable;
