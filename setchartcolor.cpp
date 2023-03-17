@@ -29,18 +29,18 @@ SetChartColor::~SetChartColor() {
 //------------------------------------------------------------------------------
 void SetChartColor::on_pushButton_clicked() {
   QPalette pal=palette();
-  QColor color=QColorDialog::getColor(ui->widget->palette().color(QPalette::Background),this);
+  QColor color=QColorDialog::getColor(ui->widget->palette().color(QPalette::Window),this);
   if (color.isValid()) {
-    pal.setColor(QPalette::Background,color);
+    pal.setColor(QPalette::Window,color);
     ui->widget->setPalette(pal);
     }
   }
 //------------------------------------------------------------------------------
 void SetChartColor::on_pushButton_2_clicked() {
   QPalette pal=palette();
-  QColor color=QColorDialog::getColor(ui->widget_2->palette().color(QPalette::Background),this);
+  QColor color=QColorDialog::getColor(ui->widget_2->palette().color(QPalette::Window),this);
   if (color.isValid()) {
-    pal.setColor(QPalette::Background,color);
+    pal.setColor(QPalette::Window,color);
     ui->widget_2->setPalette(pal);
     }
   }

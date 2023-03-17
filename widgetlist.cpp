@@ -3,22 +3,11 @@
 WidgetList::WidgetList(int graph_type) {
   datatable=nullptr;
   plottype=graph_type;
-  switch(plottype) {
-    case GRAPH_TYPES::TABLEVIEW:
-      ncombo=1;
-      break;
-    case GRAPH_TYPES::SCATTERPLOT:
-      ncombo=6;
-      break;
-    case GRAPH_TYPES::BARCHART:
-      ncombo=4;
-      break;
-    }
-  combo=new QComboBox*[ncombo];
-  active=new bool[ncombo];
-  for (int i1=0; i1<ncombo; i1++) {
+  combo=new QComboBox*[NCOMBO];
+  active=new bool[NCOMBO];
+  for (int i1=0; i1<NCOMBO; i1++) {
     combo[i1]=nullptr;
-    active[i1]=i1<ALWAYSACTIVE;
+    active[i1]=CATEGORY_ACTIVE[i1];
     }
   color1=Qt::darkBlue;
   color2=Qt::white;
@@ -31,7 +20,7 @@ WidgetList::WidgetList(int graph_type) {
 //------------------------------------------------------------------------------
 WidgetList::~WidgetList() {
   delete object;
-  for (int i1=0; i1<ncombo; i1++)
+  for (int i1=0; i1<NCOMBO; i1++)
     delete combo[i1];
   delete combo;
   delete active;

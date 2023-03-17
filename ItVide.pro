@@ -25,7 +25,7 @@ SOURCES += main.cpp\
     datamatrix.cpp \
     datatable.cpp \
     widgetlist.cpp \
-    ctkrangeslider.cpp \
+    rangeslider.cpp \
     qcustomplot.cpp \
     setchartcolor.cpp \
     plotdatacontainer.cpp \
@@ -38,7 +38,7 @@ HEADERS  += mainwindow.h \
     global.h \
     widgetlist.h \
     messages.h \
-    ctkrangeslider.h \
+    rangeslider.h \
     qcustomplot.h \
     setchartcolor.h \
     plotdatacontainer.h \

@@ -61,9 +61,9 @@ void MainWindow::setChartColor() {
 
   SetChartColor setChartColor(this);
   populateColumnBox(activeWidgetList->datatable,setChartColor.ui->comboBox,activeWidgetList->combo[WidgetList::CATEGORY::COLOR]->currentIndex());
-  pal.setColor(QPalette::Background,activeWidgetList->color1);
+  pal.setColor(QPalette::Window,activeWidgetList->color1);
   setChartColor.ui->widget->setPalette(pal);
-  pal.setColor(QPalette::Background,activeWidgetList->color2);
+  pal.setColor(QPalette::Window,activeWidgetList->color2);
   setChartColor.ui->widget_2->setPalette(pal);
   switch(activeWidgetList->colortype) {
     case WidgetList::SINGLE:
@@ -77,8 +77,8 @@ void MainWindow::setChartColor() {
       break;
     }
   if (setChartColor.exec()==QDialog::Accepted) {
-    activeWidgetList->color1=setChartColor.ui->widget->palette().color(QPalette::Background);
-    activeWidgetList->color2=setChartColor.ui->widget_2->palette().color(QPalette::Background);
+    activeWidgetList->color1=setChartColor.ui->widget->palette().color(QPalette::Window);
+    activeWidgetList->color2=setChartColor.ui->widget_2->palette().color(QPalette::Window);
     activeWidgetList->colortype=(setChartColor.ui->radioButton->isChecked()?WidgetList::SINGLE:
                                  setChartColor.ui->radioButton_2->isChecked()?WidgetList::CONTINUOUS:WidgetList::CATEGORICAL);
     activeWidgetList->active[WidgetList::CATEGORY::COLOR]=activeWidgetList->colortype!=WidgetList::SINGLE;
@@ -221,14 +221,14 @@ void MainWindow::on_actionReset_Filters_triggered() {
   //UpdateTablePlot(dt1,ui->tabWidget->currentWidget()->findChild<QTableWidget *>());
   }
 //------------------------------------------------------------------------------
-void MainWindow::filterSliderChanged(ctkRangeSlider *slider,DataTable *dataTable,DataMatrix *dataMatrix) {
+void MainWindow::filterSliderChanged(RangeSlider *slider,DataTable *dataTable,DataMatrix *dataMatrix) {
   WidgetList *widgetList;
   QList<QLabel *> labels;
   double min,max;
 
   labels=slider->parentWidget()->findChildren<QLabel *>();
-  min=dataMatrix->getActualValue(slider->minimumValue());
-  max=dataMatrix->getActualValue(slider->maximumValue());
+  min=dataMatrix->getActualValue(slider->lowerValue());
+  max=dataMatrix->getActualValue(slider->upperValue());
   labels.at(RANGESLIDERMIN)->setText(QString::number(min));
   labels.at(RANGESLIDERMAX)->setText(QString::number(max));
   for (int y=0; y<dataTable->size; y++)
@@ -266,8 +266,9 @@ void MainWindow::dataTableChanged(QComboBox *comboBox) {
   for (widgetList=mainWidgetList; widgetList!=nullptr; widgetList=widgetList->Next)
     if (widgetList->combo[WidgetList::CATEGORY::TABLE]==comboBox) {
       widgetList->datatable=dataTable;
-      for (int i1=1; i1<widgetList->ncombo; i1++)
-        populateColumnBox(dataTable,widgetList->combo[i1],0);
+      for (int i1=0; i1<widgetList->NCOMBO; i1++)
+        if (CATEGORY_COLUMN[i1])
+          populateColumnBox(dataTable,widgetList->combo[i1],0);
       if (widgetList->combo[WidgetList::CATEGORY::X]!=nullptr)
         widgetList->combo[WidgetList::CATEGORY::X]->setCurrentIndex(1);
       updatePlot(widgetList);
@@ -385,12 +386,28 @@ void MainWindow::populateColumnBox(DataTable *myDataTable,QComboBox *comboBox,in
   comboBox->blockSignals(false);
   }
 //------------------------------------------------------------------------------
+QComboBox *MainWindow::AddAggregationComboBox(WidgetList *widgetList) {
+  QComboBox *comboBox;
+
+  comboBox=new QComboBox();
+  comboBox->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+  comboBox->blockSignals(true);
+  comboBox->clear();
+  comboBox->addItems(global::AGGREGATION_LIST);
+  comboBox->blockSignals(false);
+  connect(comboBox,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),[=] {
+      updatePlot(widgetList);
+      }
+    );
+  return comboBox;
+  }
+//------------------------------------------------------------------------------
 void MainWindow::addFilters(DataTable *dataTable) {
   DataMatrix *dataMatrix;
   QVBoxLayout *frameLayout;
   QGridLayout *myLayout;
   QLabel *label,*label2;
-  ctkRangeSlider *slider;
+  RangeSlider *slider;
   QFrame *frame;
   QListWidget *listWidget;
   int i1;
@@ -430,16 +447,26 @@ void MainWindow::addFilters(DataTable *dataTable) {
       label2=new QLabel(QString::number(dataMatrix->maxValue));
       label2->setAlignment(Qt::AlignRight);
       myLayout->addWidget(label2,1,1,1,1);
-      slider=new ctkRangeSlider(Qt::Horizontal,0);
+      slider=new RangeSlider();
+      slider->setRange(0,dataMatrix->intervals-1);
+      slider->setProperty("Orientation",true);
+      connect(slider,&RangeSlider::rangeChanged,[=] {
+          filterSliderChanged(slider,dataTable,dataMatrix);
+          }
+        );
+      /*
+      Old code
+      slider=new RangeSlider(Qt::Horizontal,0);
       slider->setMinimum(0);
       slider->setMaximum(dataMatrix->intervals-1);
       slider->setMinimumPosition(0);
       slider->setMaximumPosition(dataMatrix->intervals-1);
       slider->setProperty("Orientation",true);
-      connect(slider,&ctkRangeSlider::valuesChanged,[=] {
+      connect(slider,&RangeSlider::valuesChanged,[=] {
           filterSliderChanged(slider,dataTable,dataMatrix);
           }
         );
+      */
       label->setMaximumWidth(slider->width());
       myLayout->addWidget(slider,2,0,1,2);
       }
@@ -635,6 +662,7 @@ void MainWindow::createBarChart(DataTable *dataTable) {
   widgetList->combo[WidgetList::CATEGORY::Y]=AddParameterComboBox(widgetList,0);
   widgetList->combo[WidgetList::CATEGORY::X]=AddParameterComboBox(widgetList,1);
   widgetList->combo[WidgetList::CATEGORY::COLOR]=AddParameterComboBox(widgetList,0);
+  widgetList->combo[WidgetList::CATEGORY::AGGREGATION]=AddAggregationComboBox(widgetList);
   myLayout=AddTab(widgetList);
   myLayout->addLayout(widgetList->legend,0,0,Qt::AlignTop);
   showLegend(widgetList,false);
@@ -716,28 +744,29 @@ void MainWindow::updateBarChart(WidgetList *widgetList) {
 PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
   DataMatrix *dataMatrix;
   PlotDataContainer plotdata;
-  int idx,nbins,uniqueIndex,totalIndex;
+  int idx2,idx,nbins,uniqueIndex,totalIndex;
 
   for (idx=0,dataMatrix=widgetList->datatable->dataMatrix; dataMatrix!=nullptr; idx++,dataMatrix=dataMatrix->Next)
-    for (int i1=1; i1<widgetList->ncombo; i1++)
-      if (widgetList->active[i1] && idx==widgetList->combo[i1]->currentIndex())
-        switch (i1) {
-          case WidgetList::CATEGORY::Y:
-            plotdata.dmy=dataMatrix;
-            break;
-          case WidgetList::CATEGORY::X:
-            plotdata.dmx=dataMatrix;
-            break;
-          case WidgetList::CATEGORY::COLOR:
-            plotdata.dmcolor=dataMatrix;
-            break;
-          case WidgetList::CATEGORY::SHAPE:
-            plotdata.dmshape=dataMatrix;
-            break;
-          case WidgetList::CATEGORY::SIZE:
-            plotdata.dmsize=dataMatrix;
-            break;
-          }
+    for (int i1=1; i1<widgetList->NCOMBO; i1++)
+      if (widgetList->combo[i1]!=nullptr)
+        if (widgetList->active[i1] && idx==widgetList->combo[i1]->currentIndex())
+          switch (i1) {
+            case WidgetList::CATEGORY::Y:
+              plotdata.dmy=dataMatrix;
+              break;
+            case WidgetList::CATEGORY::X:
+              plotdata.dmx=dataMatrix;
+              break;
+            case WidgetList::CATEGORY::COLOR:
+              plotdata.dmcolor=dataMatrix;
+              break;
+            case WidgetList::CATEGORY::SHAPE:
+              plotdata.dmshape=dataMatrix;
+              break;
+            case WidgetList::CATEGORY::SIZE:
+              plotdata.dmsize=dataMatrix;
+              break;
+            }
   nbins=(plotdata.dmcolor!=nullptr?plotdata.dmcolor->intervals:1)*
         (plotdata.dmshape!=nullptr?plotdata.dmshape->intervals:1)*
         (plotdata.dmsize!=nullptr?plotdata.dmsize->intervals:1);
@@ -749,6 +778,8 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
   for (int i1=0; i1<plotdata.ydata.size(); i1++) {
     plotdata.ydata[i1].resize(widgetList->datatable->size);
     plotdata.xdata[i1].resize(widgetList->datatable->size);
+    plotdata.ydata[i1].fill(0);
+    plotdata.xdata[i1].fill(0);
     plotdata.plotTypes[i1].resize(GRAPHTYPES_LENGTH);
     indx[i1]=0;
     }
@@ -770,16 +801,42 @@ PlotDataContainer MainWindow::setPlotData(WidgetList *widgetList) {
       }
     if (plotdata.dmsize!=nullptr)
       uniqueIndex=totalIndex*plotdata.dmsize->uniqueIndex[y]+uniqueIndex;
-    if (plotdata.dmy->valueType==global::STRING_TYPE) {
+
+    if (plotdata.dmy->valueType==global::STRING_TYPE)
       plotdata.ydata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmy->uniqueValue->indexOf(plotdata.dmy->value[y]);
-      }
     else
       plotdata.ydata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmy->value[y].toDouble();
-    if (plotdata.dmx->valueType==global::STRING_TYPE) {
-      plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->uniqueValue->indexOf(plotdata.dmx->value[y]);
+
+    switch(widgetList->plottype) {
+      case WidgetList::GRAPH_TYPES::SCATTERPLOT:
+        if (plotdata.dmx->valueType==global::STRING_TYPE)
+          plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->uniqueValue->indexOf(plotdata.dmx->value[y]);
+        else
+          plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->value[y].toDouble();
+        break;
+      case WidgetList::GRAPH_TYPES::BARCHART:
+        if (plotdata.dmx->valueType==global::STRING_TYPE)
+          plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->uniqueValue->indexOf(plotdata.dmx->value[y]);
+        else {
+          idx2=plotdata.dmy->uniqueValue->indexOf(plotdata.dmy->value[y]);
+          switch(widgetList->combo[WidgetList::CATEGORY::AGGREGATION]->currentIndex()) {
+            case global::AGGREGATION_TYPE::COUNT:
+              plotdata.xdata[idx2][indx[idx2]]++;
+              break;
+            case global::AGGREGATION_TYPE::SUM:
+              plotdata.xdata[idx2][indx[idx2]]+=plotdata.dmx->value[y].toDouble();
+              break;
+            case global::AGGREGATION_TYPE::AVERAGE:
+              plotdata.xdata[idx2][indx[idx2]]+=plotdata.dmx->value[y].toDouble();
+              break;
+            default:
+              plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->value[y].toDouble();
+              break;
+            }
+        break;
+        }
       }
-    else
-      plotdata.xdata[uniqueIndex][indx[uniqueIndex]]=plotdata.dmx->value[y].toDouble();
+
     indx[uniqueIndex]++;
     if (indx[uniqueIndex]>1)
       continue;
@@ -824,10 +881,9 @@ WidgetList *MainWindow::createPlotData(DataTable *dataTable,int graphtype) {
 //------------------------------------------------------------------------------
 void MainWindow::showLegend(WidgetList *widgetList,bool update) {
   QLabel *label;
-  const QString CATEGORY_TEXT[]={
-    "Data","Y Axis","X Axis","Colour","Shape","Size"
-    };
-  for (int i1=0; i1<widgetList->ncombo; i1++) {
+  for (int i1=0; i1<widgetList->NCOMBO; i1++) {
+    if (widgetList->combo[i1]==nullptr)
+      continue;
     if (!update) {
       label=new QLabel(CATEGORY_TEXT[i1]);
       widgetList->legend->addWidget(label);

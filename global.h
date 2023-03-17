@@ -38,7 +38,13 @@ namespace global {
   const char DELIMITERS[]=",\t";
   const char SEPARATOR='\"';
   const char PATTERN[]="\\s+$";
-  enum VARIABLE_TYPES {INT_TYPE,DOUBLE_TYPE,STRING_TYPE};
+  enum VARIABLE_TYPE {
+    INT_TYPE,DOUBLE_TYPE,STRING_TYPE
+    };
+  enum AGGREGATION_TYPE {
+    NONE,COUNT,SUM,AVERAGE
+    };
+  const QStringList AGGREGATION_LIST=QStringList()<<"None"<< "Count"<< "Sum"<< "Average";
 //------------------------------------------------------------------------------
 // Functions
 //------------------------------------------------------------------------------

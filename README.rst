@@ -23,15 +23,13 @@ Dependency     Version/source
 ============== ========================================================================================================
 C++ compiler   version 5+
 qmake          version 5+
-CTKRangeSlider Information can be read at http://www.commontk.org/docs/html/classctkRangeSlider.html
-               The ctkrangeslider files can be downloaded from https://github.com/mcallegari/qlcplus/tree/master/ui/src
 QCustomPlot    The QCustomPlot can be downloaded from http://www.qcustomplot.com
 ============== ========================================================================================================
 
 In order to build just run...::
 
   cd [SOURCE DIR]
-  qmake -makefile EXTERNAL_PATH="<QCUSTOMPLOT FOLDER> <CTKRANGESLIDER FOLDER>"
+  qmake -makefile EXTERNAL_PATH="<QCUSTOMPLOT FOLDER>"
   make
 
 The Makefile is created in the source dir whereas the executable
@@ -41,7 +39,7 @@ If you are using Qt Creator goto Projects->Build&Run->Build->Build Steps
 Open *Details* and add as *additional arguments*
 ::
 
-  EXTERNAL_PATH="<QCUSTOMPLOT FOLDER> <CTKRANGESLIDER FOLDER>"
+  EXTERNAL_PATH="<QCUSTOMPLOT FOLDER>"
 
 LICENSE
 -------

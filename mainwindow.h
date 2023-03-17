@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QList>
 #include <QMessageBox>
 #include <qcustomplot.h>
-#include <ctkrangeslider.h>
+#include <rangeslider.h>
 #include "datatable.h"
 #include "datamatrix.h"
 #include "widgetlist.h"
@@ -65,6 +65,7 @@ class MainWindow : public QMainWindow {
     QGridLayout *AddTab(WidgetList *widgetList);
     QComboBox *AddDataTableComboBox(DataTable *myDataTable);
     QComboBox *AddParameterComboBox(WidgetList *widgetList,int index);
+    QComboBox *AddAggregationComboBox(WidgetList *widgetList);
     void populateColumnBox(DataTable *myDataTable,QComboBox *comboBox,int index);
     void addFilters(DataTable *dataTable);
     void createTablePlot(DataTable *dataTable);
@@ -82,7 +83,7 @@ class MainWindow : public QMainWindow {
     void on_actionTable_triggered();
     void on_actionScatterplot_triggered();
     void closeEvent();
-    void filterSliderChanged(ctkRangeSlider *slider,DataTable *dataTable,DataMatrix *dataMatrix);
+    void filterSliderChanged(RangeSlider *slider,DataTable *dataTable,DataMatrix *dataMatrix);
     void filterListWidgetChanged(QListWidget *listWidget,DataTable *dataTable,DataMatrix *dataMatrix);
     void dataTableChanged(QComboBox *comboBox);
     void closeTab(int index);
@@ -99,7 +100,7 @@ class MainWindow : public QMainWindow {
     void addLegendTitle(QCustomPlot *chart,QString title);
     void on_actionBarchart_triggered();
 
-    private:
+  private:
     Ui::MainWindow *ui;
     const int RANGESLIDERMIN=1;
     const int RANGESLIDERMAX=2;

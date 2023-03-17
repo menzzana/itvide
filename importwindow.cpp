@@ -40,7 +40,7 @@ bool ImportWindow::ImportData(QString fileName) {
   if (!file.open(QIODevice::ReadOnly|QIODevice::Text))
     return false;
   stream.setDevice(&file);
-  tableHeader=decodeFileRow(stream.readLine().remove(QRegExp(global::PATTERN)));
+  tableHeader=decodeFileRow(stream.readLine().remove(QRegularExpression(global::PATTERN)));
   valueTypes=new int[tableHeader.count()];
   for (i1=0; i1<tableHeader.count(); i1++)
     valueTypes[i1]=global::INT_TYPE;
@@ -51,7 +51,7 @@ bool ImportWindow::ImportData(QString fileName) {
   ui->tableWidget->verticalHeader()->setVisible(false);
   ui->tableWidget->setHorizontalHeaderLabels(tableHeader);
   while (!stream.atEnd()) {
-      qs1=stream.readLine().remove(QRegExp(global::PATTERN));
+      qs1=stream.readLine().remove(QRegularExpression(global::PATTERN));
     if (qs1.isEmpty())
       continue;
     tableRows++;
